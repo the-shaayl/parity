@@ -12,7 +12,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
-        name: 'Parity — Interview Mental Math',
+        name: 'Parity',
         short_name: 'Parity',
         description:
           'Timed mental math drills for case and finance interviews: arithmetic, percentages, fractions, Rule of 72, clock angles and poker odds.',
