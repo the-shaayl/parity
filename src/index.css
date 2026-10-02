@@ -5,33 +5,35 @@
 
 /* Design tokens. Every color in the app comes from here, so light/dark stay consistent. */
 :root {
-  --bg: #f7f7f5;
-  --surface: #ffffff;
-  --surface-2: #eeefec;
-  --fg: #111418;
-  --muted: #5e6670;
-  --border: #e1e3e0;
-  --accent: #1f6f5c;
-  --accent-fg: #ffffff;
-  --accent-soft: #dcefe8;
-  --success: #1a7f4b;
-  --danger: #c2412d;
+  /* Warm off-white paper, ink text, one forest-green accent. */
+  --bg: #f4f2ed;
+  --surface: #faf9f6;
+  --surface-2: #e9e6df;
+  --fg: #23221f;
+  --muted: #6e6a62;
+  --border: #dcd8cf;
+  --accent: #2f5d4e;
+  --accent-fg: #f4f2ed;
+  --success: #2f6b3f;
+  --danger: #a8442e;
+  --bar: #cfcbc1;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0e1113;
-    --surface: #171b1e;
-    --surface-2: #20262a;
-    --fg: #eceff1;
-    --muted: #9aa4ae;
-    --border: #283035;
-    --accent: #3fbf9a;
-    --accent-fg: #0b1512;
-    --accent-soft: #163229;
-    --success: #3fbf7f;
-    --danger: #f07a63;
+    /* Warm near-black with a soft sage accent. */
+    --bg: #1f1f1d;
+    --surface: #282825;
+    --surface-2: #31312d;
+    --fg: #dcd9d2;
+    --muted: #8d897f;
+    --border: #393935;
+    --accent: #8fb8a4;
+    --accent-fg: #1f1f1d;
+    --success: #9cc08a;
+    --danger: #d98b74;
+    --bar: #4a4944;
     color-scheme: dark;
   }
 }
@@ -45,11 +47,11 @@
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
-  --color-accent-soft: var(--accent-soft);
   --color-success: var(--success);
   --color-danger: var(--danger);
-  --font-sans:
-    ui-sans-serif, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --color-bar: var(--bar);
+  /* The device's own font: San Francisco on Apple devices, Roboto on Android. */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
 @layer base {
@@ -62,7 +64,7 @@
     background: var(--bg);
     color: var(--fg);
     font-family: var(--font-sans);
-    font-feature-settings: 'tnum' 1; /* digits all the same width, so numbers don't jiggle */
+    font-variant-numeric: tabular-nums; /* all digits the same width, so numbers don't shift */
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
@@ -98,59 +100,61 @@
     transform: scaleX(0);
   }
 }
-@keyframes flash-correct {
-  0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 70%, transparent);
-    border-color: var(--success);
-  }
-  100% {
-    box-shadow: 0 0 0 14px transparent;
-  }
-}
-@keyframes flash-wrong {
+@keyframes shake {
   0%,
   100% {
     transform: translateX(0);
   }
   20% {
-    transform: translateX(-6px);
-    border-color: var(--danger);
+    transform: translateX(-5px);
   }
   40% {
-    transform: translateX(6px);
-    border-color: var(--danger);
+    transform: translateX(5px);
   }
   60% {
-    transform: translateX(-3px);
+    transform: translateX(-2px);
   }
   80% {
-    transform: translateX(3px);
+    transform: translateX(2px);
   }
 }
-@keyframes pop-in {
+@keyframes question-in {
   from {
     opacity: 0;
-    transform: scale(0.96) translateY(4px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
-.anim-correct {
-  animation: flash-correct 420ms ease-out;
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
 }
-.anim-wrong {
-  animation: flash-wrong 360ms ease-in-out;
+@keyframes low-time {
+  50% {
+    opacity: 0.55;
+  }
 }
-.anim-pop {
-  animation: pop-in 220ms ease-out both;
+
+.anim-shake {
+  animation: shake 360ms ease-in-out;
+}
+.anim-question {
+  animation: question-in 120ms ease-out both;
+}
+.anim-caret {
+  animation: caret-blink 1s steps(1) infinite;
+}
+.anim-low-time {
+  animation: low-time 0.8s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .anim-correct,
-  .anim-wrong,
-  .anim-pop {
+  .anim-shake,
+  .anim-question,
+  .anim-low-time,
+  .anim-caret {
     animation: none;
   }
 }

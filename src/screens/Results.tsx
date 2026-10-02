@@ -1,9 +1,11 @@
-import { Icons } from '../components/icons'
-import { Button, Card } from '../components/ui'
+import { useState } from 'react'
+import { RecentRuns } from '../components/RecentRuns'
+import { Button, TextButton } from '../components/ui'
 import { summarize } from '../engine/sprint'
 import type { RoundResult } from '../engine/types'
-import { formatNumber, formatSeconds } from '../lib/format'
+import { formatSeconds } from '../lib/format'
 import { getMode } from '../modes'
+import { getRecentRounds } from '../storage/stats'
 
 export interface SaveInfo {
   isNewBest: boolean
@@ -26,38 +28,45 @@ export function Results({
   const { config, records } = result
   const mode = getMode(config.modeId)
   const summary = summarize(records)
-  const missed = records.filter((r) => !r.correct)
-  const unit = mode.unit ?? ''
-  const durationLabel = config.duration < 60 ? `${config.duration}s` : `${config.duration / 60} min`
+  const [recent] = useState(() => getRecentRounds(config))
 
   return (
-    <div className="anim-pop mx-auto flex w-full max-w-md flex-col">
-      <p className="text-center text-sm text-muted">
-        {mode.name} · <span className="capitalize">{config.difficulty}</span> · {durationLabel}
-      </p>
+    <div className="mx-auto flex w-full max-w-md flex-col pb-4">
+      <div className="flex items-baseline justify-between text-sm text-muted">
+        <span className="flex gap-4">
+          <span>{mode.name}</span>
+          <span>{config.difficulty[0].toUpperCase() + config.difficulty.slice(1)}</span>
+          <span>{config.duration}s</span>
+        </span>
+        <TextButton onClick={onHome}>All modes</TextButton>
+      </div>
 
-      <div className="mt-8 text-center">
-        <p className="text-sm font-medium uppercase tracking-wider text-muted">Score</p>
-        <p className="text-8xl font-bold tracking-tight">{summary.score}</p>
-        <div className="mt-3 flex h-8 items-center justify-center">
+      <div className="pb-8 pt-12">
+        <p className="text-sm text-muted">Score</p>
+        <p className="text-8xl font-bold leading-none tracking-tighter text-accent">{summary.score}</p>
+        <p className="mt-4 h-5 text-sm">
           {saveInfo.isNewBest ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent">
-              <Icons.trophy /> New personal best
-              {saveInfo.previousBest !== null && ` (was ${saveInfo.previousBest})`}
+            <span className="text-accent">
+              New personal best{saveInfo.previousBest !== null && ` (was ${saveInfo.previousBest})`}
             </span>
           ) : (
             saveInfo.previousBest !== null && (
-              <span className="text-sm text-muted">Personal best: {saveInfo.previousBest}</span>
+              <span className="text-muted">
+                Personal best <span className="text-fg">{saveInfo.previousBest}</span>
+              </span>
             )
           )}
-        </div>
+        </p>
       </div>
 
-      <Card className="mt-8 grid grid-cols-3 divide-x divide-border py-4 text-center">
+      <dl className="grid grid-cols-3 gap-4">
         <Stat label="Accuracy" value={summary.attempted ? `${Math.round(summary.accuracy * 100)}%` : '—'} />
-        <Stat label="Avg / correct" value={summary.avgCorrectMs !== null ? formatSeconds(summary.avgCorrectMs) : '—'} />
+        <Stat
+          label="Avg per answer"
+          value={summary.avgCorrectMs !== null ? formatSeconds(summary.avgCorrectMs) : '—'}
+        />
         <Stat label="Attempted" value={String(summary.attempted)} />
-      </Card>
+      </dl>
 
       <div className="mt-6 grid grid-cols-2 gap-3">
         <Button variant="secondary" onClick={onSettings}>
@@ -68,43 +77,18 @@ export function Results({
         </Button>
       </div>
 
-      {missed.length > 0 && (
-        <section className="mt-10">
-          <h2 className="mb-3 font-semibold">Review ({missed.length})</h2>
-          <ul className="flex flex-col gap-2">
-            {missed.map((r, i) => (
-              <li key={i}>
-                <Card className="px-4 py-3">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <span className="font-medium">{r.question.prompt}</span>
-                    <span className="shrink-0 font-semibold text-success">
-                      {formatNumber(r.question.answer)}
-                      {unit}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-muted">
-                    {r.skipped ? 'Skipped' : `You chose ${formatNumber(r.given ?? 0)}${unit}`}
-                    {r.question.explanation && ` · ${r.question.explanation}`}
-                  </p>
-                </Card>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <Button variant="ghost" className="mt-8 self-center" onClick={onHome}>
-        All modes
-      </Button>
+      <div className="mt-12">
+        <RecentRuns runs={recent} highlightLatest />
+      </div>
     </div>
   )
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <p className="text-xl font-semibold">{value}</p>
-      <p className="mt-0.5 text-xs text-muted">{label}</p>
+    <div className="flex flex-col-reverse">
+      <dt className="text-xs text-muted">{label}</dt>
+      <dd className="text-2xl font-semibold">{value}</dd>
     </div>
   )
 }

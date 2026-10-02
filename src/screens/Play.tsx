@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { Keypad } from '../components/Keypad'
 import { Icons } from '../components/icons'
-import { IconButton } from '../components/ui'
 import type { Key } from '../engine/checkAnswer'
 import { initialSprintState, sprintReducer } from '../engine/sprint'
 import type { Question, RoundResult, SprintConfig } from '../engine/types'
-import { formatNumber } from '../lib/format'
+import { formatAnswer } from '../lib/format'
 import { tap } from '../lib/haptics'
 import { getMode } from '../modes'
 
@@ -114,64 +113,76 @@ export function Play({
 
   const score = state.records.filter((r) => r.correct).length
   const lowTime = playing && secondsLeft <= 5
-  const flash =
-    state.feedback?.kind === 'correct' ? 'anim-correct' : state.feedback?.kind === 'wrong' ? 'anim-wrong' : ''
+  const unit = question.unit ?? mode.unit
+  const prefix = question.prefix
+  const kind = state.feedback?.kind
+  const seq = state.feedback?.seq ?? 0
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
-      {/* Top bar: quit, time remaining, score */}
-      <div className="flex items-center gap-4">
-        <IconButton label="Quit round" onClick={onQuit}>
-          <Icons.close />
-        </IconButton>
-        <div
-          className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2"
+      {/* Top line: time left, mode, score */}
+      <div className="flex items-baseline justify-between">
+        <span
+          className={`w-16 text-3xl font-semibold ${lowTime ? 'anim-low-time text-danger' : 'text-accent'}`}
           role="timer"
           aria-label={`${secondsLeft} seconds left`}
         >
-          <div
-            className={`h-full origin-left rounded-full transition-colors ${lowTime ? 'bg-danger' : 'bg-accent'}`}
-            style={playing ? { animation: `drain ${config.duration}s linear forwards` } : undefined}
-          />
-        </div>
-        <div className={`w-8 text-right text-sm font-semibold ${lowTime ? 'text-danger' : 'text-muted'}`}>
-          {secondsLeft}s
-        </div>
-      </div>
-
-      <div className="mt-3 flex items-baseline justify-between text-sm text-muted">
-        <span>{mode.name}</span>
-        <span>
-          Score <span className="text-lg font-bold text-fg">{score}</span>
+          {secondsLeft}
         </span>
+        <button
+          type="button"
+          onClick={onQuit}
+          aria-label="Quit round"
+          className="flex items-center gap-1.5 text-sm text-muted hover:text-fg"
+        >
+          <span aria-hidden>×</span> {mode.name}
+        </button>
+        <span className="w-16 text-right text-3xl font-semibold" aria-label={`Score ${score}`}>
+          {score}
+        </span>
+      </div>
+      <div className="mt-3 h-px bg-border">
+        <div
+          className={`h-px origin-left ${lowTime ? 'bg-danger' : 'bg-accent'}`}
+          style={{ animation: playing ? `drain ${config.duration}s linear forwards` : undefined }}
+        />
       </div>
 
       {/* Question */}
       <div className="flex flex-1 items-center justify-center py-6">
         {playing ? (
-          <div
-            key={state.feedback?.seq ?? 0}
-            className={`w-full rounded-3xl border-2 border-transparent px-4 py-10 text-center ${flash}`}
-          >
-            <p className="text-5xl font-semibold tracking-tight break-words sm:text-6xl" aria-live="polite">
+          <div key={`q-${seq}`} className={`w-full text-center ${kind === 'wrong' ? 'anim-shake' : 'anim-question'}`}>
+            {question.label && <p className="mb-4 text-sm text-muted">{question.label}</p>}
+            <p
+              className={`font-semibold leading-none tracking-tight break-words ${promptSize(question.prompt)}`}
+              aria-live="polite"
+            >
               {question.prompt}
             </p>
           </div>
         ) : (
-          <p key={count} className="anim-pop text-7xl font-bold text-accent" aria-live="assertive">
+          <p key={`count-${count}`} className="text-7xl font-semibold text-accent" aria-live="assertive">
             {count}
           </p>
         )}
       </div>
 
-      {/* Answer area */}
-      <div className={playing ? '' : 'pointer-events-none opacity-40'}>
+      {/* Answer area. Fixed height on touch screens, so switching between typed and
+          multiple-choice questions doesn't make the layout jump. */}
+      <div
+        className={`flex min-h-[324px] flex-col justify-end sm:min-h-[356px] pointer-fine:min-h-0 ${playing ? '' : 'pointer-events-none opacity-40'}`}
+      >
         {question.input === 'type' ? (
           <>
-            <div className="mb-3 flex h-16 items-center rounded-2xl border border-border bg-surface pl-5 pr-2">
-              <output className="flex-1 text-3xl font-semibold" aria-label="Your answer">
-                {state.input ? state.input.replace('-', '−') : <span className="text-muted/50">?</span>}
-                {mode.unit && <span className="ml-1 text-muted">{mode.unit}</span>}
+            <div className="mb-4 flex h-16 items-center border-b-2 border-border">
+              <output
+                className="flex flex-1 items-center justify-center pl-12 text-4xl font-semibold"
+                aria-label="Your answer"
+              >
+                {prefix && <span className="mr-1 text-muted">{prefix}</span>}
+                {state.input ? state.input.replace('-', '−') : null}
+                {playing && <span className="anim-caret mx-0.5 inline-block h-9 w-[2px] bg-accent" />}
+                {unit && <span className="ml-1 text-muted">{unit}</span>}
               </output>
               <button
                 type="button"
@@ -180,7 +191,7 @@ export function Play({
                   e.preventDefault()
                   press('back')
                 }}
-                className="flex size-12 items-center justify-center rounded-xl text-muted active:bg-surface-2"
+                className="flex size-12 items-center justify-center text-muted active:text-fg"
               >
                 <Icons.backspace />
               </button>
@@ -190,17 +201,16 @@ export function Play({
             </div>
           </>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid flex-1 grid-cols-2 grid-rows-2 gap-px border border-border bg-border pointer-fine:flex-none">
             {question.choices?.map((c, i) => (
               <button
-                key={`${state.feedback?.seq}-${c}`}
+                key={`${seq}-${c}`}
                 type="button"
                 onClick={() => choose(c)}
-                className="relative h-16 rounded-2xl border border-border bg-surface text-xl font-semibold transition active:scale-[0.98] active:bg-surface-2"
+                className="relative min-h-16 bg-bg text-2xl font-semibold transition-colors hover:text-accent active:bg-surface-2"
               >
                 <span className="absolute left-3 top-2 hidden text-xs text-muted pointer-fine:block">{i + 1}</span>
-                {formatNumber(c)}
-                {mode.unit}
+                {formatAnswer(question, c, mode.unit)}
               </button>
             ))}
           </div>
@@ -208,13 +218,21 @@ export function Play({
 
         <div className="mt-3 flex items-center justify-between text-sm text-muted">
           <span className="hidden pointer-fine:inline">
-            {question.input === 'type' ? 'Type your answer' : 'Press 1–4'} · Space to skip
+            {question.input === 'type' ? 'Type your answer' : 'Press 1–4'}, space to skip
           </span>
-          <button type="button" onClick={skip} className="-mx-3 ml-auto rounded-lg px-3 py-2 font-medium hover:text-fg">
+          <button type="button" onClick={skip} className="-mx-2 ml-auto px-2 py-2 hover:text-fg">
             Skip
           </button>
         </div>
       </div>
     </div>
   )
+}
+
+/** Longer prompts get a smaller font so they still fit on one or two lines on a phone. */
+function promptSize(prompt: string): string {
+  if (prompt.length <= 9) return 'text-[3.5rem] sm:text-7xl'
+  if (prompt.length <= 13) return 'text-[2.75rem] sm:text-6xl'
+  if (prompt.length <= 17) return 'text-[2.25rem] sm:text-5xl'
+  return 'text-[1.9rem] sm:text-4xl'
 }

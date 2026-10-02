@@ -13,6 +13,7 @@ const LABELS: Partial<Record<Key, string>> = { '-': '±', '.': '.' }
 /**
  * On-screen number pad. Used instead of the phone keyboard because iPhone's number keyboard has
  * no minus or decimal key, and the system keyboard covers the screen and shifts the layout.
+ * Drawn as a calculator grid: keys separated by 1px lines rather than floating buttons.
  */
 export function Keypad({
   onKey,
@@ -24,7 +25,7 @@ export function Keypad({
   negative: boolean
 }) {
   return (
-    <div className="grid grid-cols-3 gap-2" role="group" aria-label="Number pad">
+    <div className="grid grid-cols-3 gap-px border border-border bg-border" role="group" aria-label="Number pad">
       {ROWS.flat().map((key) => {
         const disabled = (key === '.' && !decimal) || (key === '-' && !negative)
         return (
@@ -46,7 +47,7 @@ export function Keypad({
                 if (!disabled) onKey(key)
               }
             }}
-            className="h-14 rounded-xl bg-surface text-2xl font-medium text-fg shadow-[0_1px_0_var(--border)] transition-colors active:bg-surface-2 disabled:opacity-0 sm:h-16"
+            className="h-14 bg-bg text-2xl text-fg transition-colors duration-75 active:bg-surface-2 disabled:text-transparent sm:h-16"
           >
             {LABELS[key] ?? key}
           </button>

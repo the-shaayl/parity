@@ -33,7 +33,13 @@ interface SavedData {
   lastConfig: Partial<Record<ModeId, SprintConfig>>
 }
 
-const empty = (): SavedData => ({ version: VERSION, bests: {}, rounds: [], tags: {}, lastConfig: {} })
+const empty = (): SavedData => ({
+  version: VERSION,
+  bests: {},
+  rounds: [],
+  tags: {},
+  lastConfig: {},
+})
 
 export function load(): SavedData {
   try {
@@ -108,4 +114,23 @@ export function saveLastConfig(config: SprintConfig) {
   const data = load()
   data.lastConfig[config.modeId] = config
   save(data)
+}
+
+type ConfigKey = Pick<SprintConfig, 'modeId' | 'difficulty' | 'duration'>
+
+/** The most recent rounds played with exactly these settings, newest first. */
+export function getRecentRounds(config: ConfigKey, limit = 10): SavedRound[] {
+  return load()
+    .rounds.filter(
+      (r) => r.modeId === config.modeId && r.difficulty === config.difficulty && r.duration === config.duration,
+    )
+    .slice(0, limit)
+}
+
+/** Personal best for a mode at the settings the player last used (or the defaults). */
+export function getModeBest(modeId: ModeId): { score: number; config: ConfigKey } | null {
+  const data = load()
+  const config = data.lastConfig[modeId] ?? { modeId, difficulty: 'medium' as const, duration: 60 as const }
+  const score = data.bests[bestKey(config)]
+  return score === undefined ? null : { score, config }
 }

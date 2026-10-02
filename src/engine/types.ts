@@ -12,6 +12,11 @@ export type Rng = () => number
 export interface Question {
   /** Text shown to the player, e.g. "47 × 8". */
   prompt: string
+  /** Short line above the prompt saying what to find, e.g. "Sale price". */
+  label?: string
+  /** Shown before / after the answer, e.g. "$" and "%". Falls back to the mode's unit. */
+  prefix?: string
+  unit?: string
   answer: number
   /** How the player answers: typing on the keypad, or tapping one of `choices`. */
   input: 'type' | 'choice'
@@ -41,8 +46,6 @@ export interface ModeOption {
 export interface ModeDef {
   id: ModeId
   name: string
-  tagline: string
-  description: string
   status: 'ready' | 'soon'
   /** Toggles shown on the setup screen (e.g. which operations to include). */
   options?: ModeOption[]

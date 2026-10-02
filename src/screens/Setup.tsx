@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Icons } from '../components/icons'
-import { Button, IconButton, Segmented } from '../components/ui'
+import { RecentRuns } from '../components/RecentRuns'
+import { Button, OptionRow, TextButton } from '../components/ui'
 import { DIFFICULTIES, DURATIONS, type ModeId, type SprintConfig } from '../engine/types'
 import { getMode } from '../modes'
-import { getBest, getLastConfig } from '../storage/stats'
+import { getBest, getLastConfig, getRecentRounds } from '../storage/stats'
 
 function defaultConfig(modeId: ModeId): SprintConfig {
   const mode = getMode(modeId)
@@ -32,6 +32,7 @@ export function Setup({
     return last ? { ...defaults, ...last, options: { ...defaults.options, ...last.options } } : defaults
   })
   const best = getBest(config)
+  const recent = getRecentRounds(config)
   const enabledCount = Object.values(config.options).filter(Boolean).length
 
   const toggleOption = (id: string) => {
@@ -42,34 +43,31 @@ export function Setup({
   }
 
   return (
-    <div className="anim-pop flex flex-1 flex-col">
-      <div className="mb-6 flex items-center">
-        <IconButton label="Back" onClick={onBack}>
-          <Icons.back />
-        </IconButton>
+    <div className="flex flex-1 flex-col">
+      <div>
+        <TextButton onClick={onBack}>← Back</TextButton>
       </div>
 
-      <h1 className="text-3xl font-bold tracking-tight">{mode.name}</h1>
-      <p className="mt-2 text-muted">{mode.description}</p>
+      <h1 className="pb-8 pt-8 text-4xl font-bold tracking-tight">{mode.name}</h1>
 
-      <div className="mt-8 flex flex-col gap-6">
-        <Segmented
-          label="Round length"
+      <div>
+        <OptionRow
+          label="Time"
           value={config.duration}
-          options={DURATIONS.map((d) => ({ value: d, label: d < 60 ? `${d}s` : `${d / 60} min` }))}
+          options={DURATIONS.map((d) => ({ value: d, label: `${d}s` }))}
           onChange={(duration) => setConfig({ ...config, duration })}
         />
-        <Segmented
-          label="Difficulty"
+        <OptionRow
+          label="Level"
           value={config.difficulty}
           options={DIFFICULTIES.map((d) => ({ value: d, label: d[0].toUpperCase() + d.slice(1) }))}
           onChange={(difficulty) => setConfig({ ...config, difficulty })}
         />
 
         {mode.options && (
-          <fieldset>
-            <legend className="mb-2 text-sm font-medium text-muted">Include</legend>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+          <div role="group" aria-label="Include" className="flex items-baseline gap-4 py-3">
+            <span className="w-24 shrink-0 text-sm text-muted">Include</span>
+            <div className="flex flex-wrap gap-x-5 gap-y-1">
               {mode.options.map((o) => {
                 const on = !!config.options[o.id]
                 return (
@@ -80,10 +78,8 @@ export function Setup({
                     aria-label={o.title}
                     title={o.title}
                     onClick={() => toggleOption(o.id)}
-                    className={`h-12 rounded-xl border text-lg font-semibold transition ${
-                      on
-                        ? 'border-accent bg-accent-soft text-accent'
-                        : 'border-border bg-surface text-muted hover:text-fg'
+                    className={`py-1 text-lg transition-colors ${
+                      on ? 'font-semibold text-accent' : 'text-muted line-through decoration-1 hover:text-fg'
                     }`}
                   >
                     {o.label}
@@ -91,15 +87,20 @@ export function Setup({
                 )
               })}
             </div>
-          </fieldset>
+          </div>
         )}
       </div>
 
-      <div className="mt-auto pt-10">
-        <p className="mb-3 flex h-5 items-center justify-center gap-1.5 text-sm text-muted">
+      <div className="mt-10">
+        <RecentRuns runs={recent} />
+      </div>
+
+      {/* Start button stays pinned to the bottom, within thumb reach. */}
+      <div className="sticky bottom-0 -mx-4 mt-auto bg-bg px-4 pb-1 pt-6">
+        <p className="mb-3 h-5 text-center text-sm text-muted">
           {best !== null && (
             <>
-              <Icons.trophy /> Personal best: <span className="font-semibold text-fg">{best}</span>
+              Personal best <span className="text-fg">{best}</span>
             </>
           )}
         </p>

@@ -1,3 +1,5 @@
+import type { Question } from '../engine/types'
+
 const SUPERSCRIPT: Record<string, string> = {
   '0': '⁰',
   '1': '¹',
@@ -26,4 +28,9 @@ export function superscript(n: number): string {
 
 export function formatSeconds(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`
+}
+
+/** An answer with its units, e.g. "$120", "37.5%", "12". */
+export function formatAnswer(question: Pick<Question, 'prefix' | 'unit'>, value: number, modeUnit = ''): string {
+  return `${question.prefix ?? ''}${formatNumber(value)}${question.unit ?? modeUnit}`
 }

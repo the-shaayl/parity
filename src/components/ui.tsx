@@ -1,11 +1,10 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import type { ButtonHTMLAttributes } from 'react'
 
-type Variant = 'primary' | 'secondary' | 'ghost'
+type Variant = 'primary' | 'secondary'
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-accent text-accent-fg hover:brightness-110 active:brightness-95',
-  secondary: 'bg-surface text-fg border border-border hover:bg-surface-2 active:bg-surface-2',
-  ghost: 'text-muted hover:text-fg hover:bg-surface-2',
+  primary: 'bg-accent text-accent-fg hover:opacity-90 active:opacity-80',
+  secondary: 'border border-border text-fg hover:border-muted active:bg-surface',
 }
 
 export function Button({
@@ -16,26 +15,27 @@ export function Button({
   return (
     <button
       {...props}
-      className={`inline-flex h-12 items-center justify-center gap-2 rounded-xl px-5 text-base font-semibold transition disabled:opacity-40 ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex h-12 items-center justify-center rounded-xs px-5 text-base font-semibold transition disabled:opacity-40 ${VARIANTS[variant]} ${className}`}
     />
   )
 }
 
-export function IconButton({ label, children, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string }) {
+/** A plain text button, e.g. "← back" or "skip". */
+export function TextButton({ className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
+      type="button"
       {...props}
-      aria-label={label}
-      title={label}
-      className="-m-2 flex size-11 items-center justify-center rounded-full text-muted transition hover:bg-surface-2 hover:text-fg"
-    >
-      {children}
-    </button>
+      className={`-mx-2 px-2 py-2 text-sm text-muted transition-colors hover:text-fg ${className}`}
+    />
   )
 }
 
-/** A row of mutually exclusive choices, like an iOS segmented control. */
-export function Segmented<T extends string | number>({
+/**
+ * A row of mutually exclusive text options with a label on the left, in the style of a
+ * terminal settings line: the selected option is in the accent color.
+ */
+export function OptionRow<T extends string | number>({
   label,
   value,
   options,
@@ -47,27 +47,23 @@ export function Segmented<T extends string | number>({
   onChange: (value: T) => void
 }) {
   return (
-    <fieldset>
-      <legend className="mb-2 text-sm font-medium text-muted">{label}</legend>
-      <div className="grid grid-flow-col auto-cols-fr gap-1 rounded-xl bg-surface-2 p-1">
+    <div role="group" aria-label={label} className="flex items-baseline gap-4 py-3">
+      <span className="w-24 shrink-0 text-sm text-muted">{label}</span>
+      <div className="flex flex-wrap gap-x-5 gap-y-1">
         {options.map((o) => (
           <button
             key={o.value}
             type="button"
             aria-pressed={o.value === value}
             onClick={() => onChange(o.value)}
-            className={`h-10 rounded-lg text-sm font-semibold transition ${
-              o.value === value ? 'bg-surface text-fg shadow-sm' : 'text-muted hover:text-fg'
+            className={`py-1 text-base transition-colors ${
+              o.value === value ? 'font-semibold text-accent' : 'text-muted hover:text-fg'
             }`}
           >
             {o.label}
           </button>
         ))}
       </div>
-    </fieldset>
+    </div>
   )
-}
-
-export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border border-border bg-surface ${className}`}>{children}</div>
 }
