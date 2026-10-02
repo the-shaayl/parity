@@ -4,15 +4,15 @@ import { formatNumber } from '../../lib/format'
 
 /*
  * Delta: percentage questions of the kind that come up in case and deal math.
- * Every question is built so the answer is a whole number or has one decimal place.
+ * Every question is built so the answer is a whole number.
  */
 
-export type DeltaKind = 'of' | 'sale' | 'successive' | 'stacked' | 'reverse'
+export type DeltaKind = 'of' | 'sale' | 'successive'
 
 const KINDS: Record<Difficulty, DeltaKind[]> = {
   easy: ['of', 'sale'],
-  medium: ['of', 'sale', 'successive'],
-  hard: ['of', 'sale', 'successive', 'stacked', 'reverse'],
+  medium: ['of', 'sale'],
+  hard: ['of', 'sale', 'successive'],
 }
 
 /** Percentages used for "X% of" and discounts. */
@@ -22,28 +22,49 @@ const PERCENTS: Record<Difficulty, number[]> = {
   hard: [8, 12, 18, 35, 65, 2.5, 17.5, 22.5],
 }
 
-/** True when n has at most one decimal place (ignoring floating-point noise). */
-export function atMostOneDecimal(n: number): boolean {
-  return Math.abs(n * 10 - Math.round(n * 10)) < 1e-9
+/** Easy discounts stay simple: multiples of 10. */
+const EASY_DISCOUNTS = [10, 20, 30, 40, 50]
+
+/** [step, min, max] for the number a percentage is taken of. */
+type BaseRange = [number, number, number]
+const BASES: Record<Difficulty, BaseRange> = {
+  easy: [20, 40, 400],
+  medium: [10, 50, 900],
+  hard: [1, 20, 999],
+}
+/** Easy sale prices are multiples of $50. */
+const EASY_PRICES: BaseRange = [50, 50, 500]
+
+/** True when n is a whole number (ignoring floating-point noise). */
+export function isWhole(n: number): boolean {
+  return Math.abs(n - Math.round(n)) < 1e-9
 }
 
-const round1 = (n: number) => Math.round(n * 10) / 10
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
+const lcm = (a: number, b: number) => (a / gcd(a, b)) * b
+
+/** Smallest whole number b for which p% of b is whole. Works for percentages with one decimal place. */
+function wholeStep(p: number): number {
+  const tenths = Math.round(p * 10)
+  return 1000 / gcd(tenths, 1000)
+}
+
+/** A number in the range that p% of (and 100 − p% of) comes out whole. */
+function base(rng: Rng, [step, min, max]: BaseRange, p: number): number {
+  const s = lcm(step, wholeStep(p))
+  return randInt(rng, Math.ceil(min / s), Math.floor(max / s)) * s
+}
+
 const pct = (p: number) => `${formatNumber(p)}%`
 const signed = (p: number) => `${p > 0 ? '+' : '−'}${formatNumber(Math.abs(p))}%`
 
-/** Draws numbers until `build` produces a question with a clean answer. */
+/** Draws numbers until `build` produces a question with a whole-number answer. */
 function retry(rng: Rng, build: (rng: Rng) => Question | null): Question {
   for (let i = 0; i < 200; i++) {
     const q = build(rng)
-    if (q && Number.isFinite(q.answer) && atMostOneDecimal(q.answer)) return { ...q, answer: round1(q.answer) }
+    if (q && Number.isFinite(q.answer) && isWhole(q.answer)) return { ...q, answer: Math.round(q.answer) }
   }
   throw new Error('Could not build a clean percentage question')
-}
-
-function base(rng: Rng, difficulty: Difficulty): number {
-  if (difficulty === 'easy') return randInt(rng, 2, 20) * 20
-  if (difficulty === 'medium') return randInt(rng, 5, 90) * 10
-  return randInt(rng, 20, 999)
 }
 
 function makeQuestion(kind: DeltaKind, difficulty: Difficulty, rng: Rng): Question {
@@ -51,14 +72,15 @@ function makeQuestion(kind: DeltaKind, difficulty: Difficulty, rng: Rng): Questi
     case 'of':
       return retry(rng, (r) => {
         const p = pick(r, PERCENTS[difficulty])
-        const b = base(r, difficulty)
+        const b = base(r, BASES[difficulty], p)
         return { prompt: `${pct(p)} of ${formatNumber(b)}`, answer: (b * p) / 100, input: 'type', tag: 'of' }
       })
 
     case 'sale':
       return retry(rng, (r) => {
-        const p = pick(r, PERCENTS[difficulty])
-        const price = base(r, difficulty)
+        const easy = difficulty === 'easy'
+        const p = pick(r, easy ? EASY_DISCOUNTS : PERCENTS[difficulty])
+        const price = base(r, easy ? EASY_PRICES : BASES[difficulty], p)
         return {
           label: 'Sale price',
           prompt: `$${formatNumber(price)}, ${pct(p)} off`,
@@ -72,9 +94,8 @@ function makeQuestion(kind: DeltaKind, difficulty: Difficulty, rng: Rng): Questi
 
     case 'successive':
       return retry(rng, (r) => {
-        const step = difficulty === 'hard' ? 5 : 10
-        const a = randInt(r, -50 / step, 50 / step) * step
-        const b = randInt(r, -50 / step, 50 / step) * step
+        const a = randInt(r, -10, 10) * 5
+        const b = randInt(r, -10, 10) * 5
         if (a === 0 || b === 0) return null
         return {
           label: 'Net % change',
@@ -84,38 +105,6 @@ function makeQuestion(kind: DeltaKind, difficulty: Difficulty, rng: Rng): Questi
           input: 'type',
           tag: 'successive',
           explanation: `${formatNumber(a)} + ${formatNumber(b)} + (${formatNumber(a)} × ${formatNumber(b)} ÷ 100)`,
-        }
-      })
-
-    case 'stacked':
-      return retry(rng, (r) => {
-        const a = randInt(r, 1, 8) * 5
-        const b = randInt(r, 1, 6) * 5
-        return {
-          label: 'Total discount',
-          prompt: `${pct(a)} off, then ${pct(b)} off`,
-          answer: a + b - (a * b) / 100,
-          unit: '%',
-          input: 'type',
-          tag: 'stacked',
-          explanation: `${a} + ${b} − (${a} × ${b} ÷ 100)`,
-        }
-      })
-
-    case 'reverse':
-      return retry(rng, (r) => {
-        const p = pick(r, [10, 20, 25, 50, 60, 75, -10, -20, -25, -40, -50])
-        const original = randInt(r, 4, 80) * 5
-        const after = (original * (100 + p)) / 100
-        if (!Number.isInteger(after)) return null
-        return {
-          label: 'Original price',
-          prompt: `${signed(p)} → $${formatNumber(after)}`,
-          answer: original,
-          prefix: '$',
-          input: 'type',
-          tag: 'reverse',
-          explanation: `$${formatNumber(after)} ÷ ${formatNumber((100 + p) / 100)}`,
         }
       })
   }

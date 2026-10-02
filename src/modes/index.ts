@@ -1,7 +1,6 @@
 import type { ModeDef, ModeId } from '../engine/types'
 import { generateArithmetic, OPS } from './arithmetic/generator'
 import { AUDIT_LEVELS } from './audit/engine'
-import { generateFractions } from './fractions/generator'
 import { generatePercent } from './percent/generator'
 
 /** Every game mode in the app. Adding a mode = adding an entry here plus its generator. */
@@ -18,16 +17,9 @@ export const MODES: ModeDef[] = [
     id: 'percent',
     name: 'Delta',
     status: 'ready',
-    keypad: (difficulty) => ({ decimal: true, negative: difficulty !== 'easy' }),
+    // Answers are always whole numbers; only Hard's net % change can go negative.
+    keypad: (difficulty) => ({ decimal: false, negative: difficulty === 'hard' }),
     generate: generatePercent,
-  },
-  {
-    id: 'fractions',
-    name: 'Slice',
-    status: 'ready',
-    unit: '%',
-    keypad: () => ({ decimal: true, negative: false }),
-    generate: generateFractions,
   },
   {
     id: 'rush',
@@ -45,21 +37,10 @@ export const MODES: ModeDef[] = [
     levels: AUDIT_LEVELS,
   },
   {
-    id: 'rule72',
-    name: 'Compound',
-    status: 'soon',
-  },
-  {
     id: 'clock',
-    name: 'Dial',
+    name: 'Clock',
     status: 'soon',
     unit: '°',
-  },
-  {
-    id: 'poker',
-    name: 'Outs',
-    status: 'soon',
-    unit: '%',
   },
 ]
 
