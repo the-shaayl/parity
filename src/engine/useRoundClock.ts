@@ -36,7 +36,8 @@ export function useRoundClock(durationSeconds: number, onStart: (now: number) =>
   // Measured against a fixed end time so it stays accurate even if the browser delays
   // timers (e.g. when the app is briefly in the background).
   useEffect(() => {
-    if (phase !== 'playing') return
+    // A duration of 0 means the mode has no round clock (it ends some other way).
+    if (phase !== 'playing' || durationSeconds <= 0) return
     const endAt = performance.now() + durationSeconds * 1000
     const interval = setInterval(() => {
       const left = endAt - performance.now()

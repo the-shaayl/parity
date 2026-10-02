@@ -36,7 +36,7 @@ export function Results({
         <span className="flex gap-4">
           <span>{mode.name}</span>
           <span>{config.difficulty[0].toUpperCase() + config.difficulty.slice(1)}</span>
-          <span>{config.duration}s</span>
+          {config.duration > 0 && <span>{config.duration}s</span>}
         </span>
         <TextButton onClick={onHome}>All modes</TextButton>
       </div>
@@ -59,7 +59,31 @@ export function Results({
         </p>
       </div>
 
-      {mode.kind === 'rush' ? (
+      {mode.kind === 'audit' ? (
+        // Audit: the score is how many in a row; show pace and how the run ended.
+        <>
+          <dl className="grid grid-cols-3 gap-4">
+            <Stat
+              label="Avg per answer"
+              value={summary.avgCorrectMs !== null ? formatSeconds(summary.avgCorrectMs) : '—'}
+            />
+            <Stat
+              label="Fastest"
+              value={
+                records.some((r) => r.correct)
+                  ? formatSeconds(Math.min(...records.filter((r) => r.correct).map((r) => r.ms)))
+                  : '—'
+              }
+            />
+            <Stat label="Ended by" value={records.at(-1)?.skipped ? 'Time' : 'Mistake'} />
+          </dl>
+          {records.at(-1) && !records.at(-1)!.correct && (
+            <p className="mt-4 text-sm text-muted">
+              Ended on {records.at(-1)!.question.prompt}, which is {records.at(-1)!.question.answer ? 'true' : 'false'}.
+            </p>
+          )}
+        </>
+      ) : mode.kind === 'rush' ? (
         // Rush: points come from exact hits (3) and near misses (1–2), so show that split.
         <dl className="grid grid-cols-3 gap-4">
           <Stat label="Exact" value={String(records.filter((r) => r.correct).length)} />

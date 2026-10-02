@@ -10,6 +10,7 @@ Timed mental math drills for case and finance interview prep. Installable web ap
 - **Never commit or push to `main`.** Anything on `main` goes live within a minute.
 - Start from an up-to-date `main`, make a branch (`git switch -c short-description`), commit there, push the branch, and open a pull request with `gh pr create`.
 - Every pull request gets an automatic **Checks** run (lint, tests, build) and a **Vercel preview link**. The other person reviews the preview on their phone and approves before merging.
+- Right after opening a pull request, turn on auto-merge: `gh pr merge --auto --merge`. It then merges by itself the moment it's approved and the checks pass, so nobody has to come back and press Merge.
 - Before pushing, run the same checks locally: `npm run lint && npm test && npm run build`.
 - Pull before starting work (`git switch main && git pull`) so you don't build on old code.
 
@@ -43,7 +44,7 @@ The owner strongly dislikes anything that looks AI-generated. Keep to these:
 - **Shape:** 2px corners at most. Group things with spacing, not boxes or lines.
 - **Motion:** quiet. A short fade or a small shake on a wrong answer, nothing more.
 - **Copy:** sentence case, short plain sentences, everyday words. **No em dashes.** No hype or "AI" phrasing ("level up your game", "master", "unlock", "dive in").
-- **Mode names:** one word (Blitz, Delta, Rush, Clock).
+- **Mode names:** one word (Blitz, Delta, Rush, Audit, Clock).
 - When a choice is a matter of taste (fonts, colours, layout), show options side by side and let the owner pick rather than guessing.
 
 ## Product decisions already made
@@ -53,6 +54,7 @@ The owner strongly dislikes anything that looks AI-generated. Keep to these:
 - Delta has no "a → b" percentage-change questions. Every Delta answer is a whole number. Easy and Medium: % of and sale price (Easy sale prices are multiples of $50, discounts multiples of 10%). Hard adds net % change. No original price or total discount questions.
 - Rush levels: Easy uses only numbers 1 to 10, Medium has one of 25 or 50, Hard has one of 25, 50, 75 or 100.
 - Slice, Compound and Outs were dropped. Clock is the only mode marked Soon.
+- Audit (from the Sudden Death spec): true/false equations, one miss or timeout ends the run, Easy (+ −) and Hard (+ − × ÷) only, no round clock. Time per equation 3s (2.7s Hard) down to 1.5s by a score of 40.
 - Rush has no streak multiplier. Scoring: 3 exact, 2 very close, 1 close. Submit locks in the selected number.
 - Home screen shows mode names only (no personal bests). Bests live on each mode's setup screen.
 - How to play: two sections only, Goal and How to answer. No question lists, no explaining Skip/Back.

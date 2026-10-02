@@ -39,4 +39,13 @@ export const INSTRUCTIONS: Partial<Record<ModeId, Instructions>> = {
       'Exact hits score 3 points. Close answers score 1 or 2.',
     ],
   },
+  audit: {
+    goal: 'Get as many right in a row as you can. One mistake ends the run.',
+    answer: [
+      'Tap ✓ if the equation is right, or ✗ if it is wrong, like 7 × 8 = 54 is wrong.',
+      'You get a few seconds for each one. Running out of time ends the run too.',
+      'The longer you last, the less time you get and the closer the wrong answers look.',
+      'Easy uses + and −. Hard adds × and ÷.',
+    ],
+  },
 }
