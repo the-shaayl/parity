@@ -1,7 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#2F5D4E"/>
+  <g fill="none" stroke="#F4F2ED" stroke-width="14" stroke-linecap="square">
+    <!-- post, base and beam -->
+    <line x1="256" y1="140" x2="256" y2="300"/>
+    <line x1="206" y1="300" x2="306" y2="300"/>
+    <line x1="130" y1="150" x2="382" y2="150"/>
+    <!-- strings -->
+    <polyline points="98,240 136,150 174,240" stroke-width="6"/>
+    <polyline points="338,240 376,150 414,240" stroke-width="6"/>
+  </g>
   <g fill="#F4F2ED">
-    <rect x="136" y="182" width="240" height="40"/>
-    <rect x="136" y="290" width="240" height="40"/>
+    <circle cx="256" cy="128" r="14"/>
+    <!-- pans -->
+    <path d="M90 240 H182 A46 34 0 0 1 90 240 Z"/>
+    <path d="M330 240 H422 A46 34 0 0 1 330 240 Z"/>
+    <text x="256" y="392" text-anchor="middle" font-family="-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="64" font-weight="600" letter-spacing="1">parity</text>
   </g>
 </svg>

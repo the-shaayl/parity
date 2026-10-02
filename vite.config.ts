@@ -14,8 +14,6 @@ export default defineConfig({
       manifest: {
         name: 'Parity',
         short_name: 'Parity',
-        description:
-          'Timed mental math drills for case and finance interviews: arithmetic, percentages, fractions, Rule of 72, clock angles and poker odds.',
         theme_color: '#1F1F1D',
         background_color: '#1F1F1D',
         display: 'standalone',
