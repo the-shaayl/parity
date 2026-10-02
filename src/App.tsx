@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { ModeId, RoundResult, SprintConfig } from './engine/types'
 import { Home } from './screens/Home'
+import { getMode } from './modes'
 import { Play } from './screens/Play'
+import { RushPlay } from './screens/RushPlay'
 import { Results, type SaveInfo } from './screens/Results'
 import { Setup } from './screens/Setup'
 import { recordRound, saveLastConfig } from './storage/stats'
@@ -56,7 +58,11 @@ export default function App() {
 
       {route.name === 'play' && (
         <div className="flex flex-1 flex-col">
-          <Play key={route.round} config={route.config} onQuit={back} onFinish={finish} />
+          {getMode(route.config.modeId).kind === 'rush' ? (
+            <RushPlay key={route.round} config={route.config} onQuit={back} onFinish={finish} />
+          ) : (
+            <Play key={route.round} config={route.config} onQuit={back} onFinish={finish} />
+          )}
         </div>
       )}
 

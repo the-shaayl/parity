@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useReducer, useRef } from 'react'
 import { Keypad } from '../components/Keypad'
 import { Icons } from '../components/icons'
 import type { Key } from '../engine/checkAnswer'
 import { initialSprintState, sprintReducer } from '../engine/sprint'
+import { useRoundClock } from '../engine/useRoundClock'
 import type { Question, RoundResult, SprintConfig } from '../engine/types'
 import { formatAnswer } from '../lib/format'
 import { tap } from '../lib/haptics'
 import { getMode } from '../modes'
 
-const COUNTDOWN_FROM = 3
 const KEYS = new Set(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-'])
 
 export function Play({
@@ -30,51 +30,17 @@ export function Play({
   )
 
   const [state, dispatch] = useReducer(sprintReducer, undefined, () => initialSprintState(generate()))
-  const [phase, setPhase] = useState<'countdown' | 'playing'>('countdown')
-  const [count, setCount] = useState(COUNTDOWN_FROM)
-  const [secondsLeft, setSecondsLeft] = useState<number>(config.duration)
-
-  // The timer callback needs the latest answers, not the ones from when it was created.
+  // The end-of-round callback needs the latest answers, not the ones from when it was created.
   const stateRef = useRef(state)
-  const onFinishRef = useRef(onFinish)
   useLayoutEffect(() => {
     stateRef.current = state
-    onFinishRef.current = onFinish
   })
-  const finished = useRef(false)
 
-  // 3-2-1 countdown before the round starts.
-  useEffect(() => {
-    if (phase !== 'countdown') return
-    const t = setTimeout(() => {
-      if (count > 1) {
-        setCount(count - 1)
-      } else {
-        dispatch({ type: 'start', now: performance.now() })
-        setPhase('playing')
-      }
-    }, 700)
-    return () => clearTimeout(t)
-  }, [phase, count])
-
-  // Round clock. Measured against a fixed end time so it stays accurate even if the
-  // browser delays timers (e.g. when the app is briefly in the background).
-  useEffect(() => {
-    if (phase !== 'playing') return
-    const endAt = performance.now() + config.duration * 1000
-    const interval = setInterval(() => {
-      const left = endAt - performance.now()
-      setSecondsLeft(Math.max(0, Math.ceil(left / 1000)))
-      if (left <= 0 && !finished.current) {
-        finished.current = true
-        clearInterval(interval)
-        onFinishRef.current({ config, records: stateRef.current.records, finishedAt: Date.now() })
-      }
-    }, 100)
-    return () => clearInterval(interval)
-  }, [phase, config])
-
-  const playing = phase === 'playing'
+  const { count, secondsLeft, playing } = useRoundClock(
+    config.duration,
+    (now) => dispatch({ type: 'start', now }),
+    () => onFinish({ config, records: stateRef.current.records, finishedAt: Date.now() }),
+  )
   const { question } = state
 
   const press = (key: Key) => {

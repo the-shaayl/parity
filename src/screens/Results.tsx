@@ -42,7 +42,7 @@ export function Results({
       </div>
 
       <div className="pb-8 pt-12">
-        <p className="text-sm text-muted">Score</p>
+        <p className="text-sm text-muted">{mode.kind === 'rush' ? 'Points' : 'Score'}</p>
         <p className="text-8xl font-bold leading-none tracking-tighter text-accent">{summary.score}</p>
         <p className="mt-4 h-5 text-sm">
           {saveInfo.isNewBest ? (
@@ -59,14 +59,30 @@ export function Results({
         </p>
       </div>
 
-      <dl className="grid grid-cols-3 gap-4">
-        <Stat label="Accuracy" value={summary.attempted ? `${Math.round(summary.accuracy * 100)}%` : '—'} />
-        <Stat
-          label="Avg per answer"
-          value={summary.avgCorrectMs !== null ? formatSeconds(summary.avgCorrectMs) : '—'}
-        />
-        <Stat label="Attempted" value={String(summary.attempted)} />
-      </dl>
+      {mode.kind === 'rush' ? (
+        // Rush: points come from exact hits (3) and near misses (1–2), so show that split.
+        <dl className="grid grid-cols-3 gap-4">
+          <Stat label="Exact" value={String(records.filter((r) => r.correct).length)} />
+          <Stat label="Near misses" value={String(records.filter((r) => !r.correct && (r.points ?? 0) > 0).length)} />
+          <Stat
+            label="Fastest solve"
+            value={
+              records.some((r) => r.correct)
+                ? formatSeconds(Math.min(...records.filter((r) => r.correct).map((r) => r.ms)))
+                : '—'
+            }
+          />
+        </dl>
+      ) : (
+        <dl className="grid grid-cols-3 gap-4">
+          <Stat label="Accuracy" value={summary.attempted ? `${Math.round(summary.accuracy * 100)}%` : '—'} />
+          <Stat
+            label="Avg per answer"
+            value={summary.avgCorrectMs !== null ? formatSeconds(summary.avgCorrectMs) : '—'}
+          />
+          <Stat label="Attempted" value={String(summary.attempted)} />
+        </dl>
+      )}
 
       <div className="mt-6 grid grid-cols-2 gap-3">
         <Button variant="secondary" onClick={onSettings}>

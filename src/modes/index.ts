@@ -29,6 +29,13 @@ export const MODES: ModeDef[] = [
     generate: generateFractions,
   },
   {
+    id: 'rush',
+    name: 'Rush',
+    status: 'ready',
+    kind: 'rush',
+    fixedDuration: 120,
+  },
+  {
     id: 'rule72',
     name: 'Compound',
     status: 'soon',

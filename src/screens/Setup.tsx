@@ -29,7 +29,8 @@ export function Setup({
     // Merge with defaults so options added in later versions of the app still get a value.
     const defaults = defaultConfig(modeId)
     const last = getLastConfig(modeId)
-    return last ? { ...defaults, ...last, options: { ...defaults.options, ...last.options } } : defaults
+    const merged = last ? { ...defaults, ...last, options: { ...defaults.options, ...last.options } } : defaults
+    return mode.fixedDuration ? { ...merged, duration: mode.fixedDuration } : merged
   })
   const best = getBest(config)
   const recent = getRecentRounds(config)
@@ -51,12 +52,14 @@ export function Setup({
       <h1 className="pb-8 pt-8 text-4xl font-bold tracking-tight">{mode.name}</h1>
 
       <div>
-        <OptionRow
-          label="Time"
-          value={config.duration}
-          options={DURATIONS.map((d) => ({ value: d, label: `${d}s` }))}
-          onChange={(duration) => setConfig({ ...config, duration })}
-        />
+        {!mode.fixedDuration && (
+          <OptionRow
+            label="Time"
+            value={config.duration}
+            options={DURATIONS.map((d) => ({ value: d, label: `${d}s` }))}
+            onChange={(duration) => setConfig({ ...config, duration })}
+          />
+        )}
         <OptionRow
           label="Level"
           value={config.difficulty}

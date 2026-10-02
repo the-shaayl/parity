@@ -90,7 +90,7 @@ export interface RoundSummary {
 export function summarize(records: AnswerRecord[]): RoundSummary {
   const correct = records.filter((r) => r.correct)
   return {
-    score: correct.length,
+    score: records.reduce((s, r) => s + (r.points ?? (r.correct ? 1 : 0)), 0),
     attempted: records.length,
     accuracy: records.length ? correct.length / records.length : 0,
     avgCorrectMs: correct.length ? correct.reduce((s, r) => s + r.ms, 0) / correct.length : null,
