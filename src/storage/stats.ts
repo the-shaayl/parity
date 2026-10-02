@@ -127,14 +127,6 @@ export function getRecentRounds(config: ConfigKey, limit = 10): SavedRound[] {
     .slice(0, limit)
 }
 
-/** Personal best for a mode at the settings the player last used (or the defaults). */
-export function getModeBest(modeId: ModeId): { score: number; config: ConfigKey } | null {
-  const data = load()
-  const config = data.lastConfig[modeId] ?? { modeId, difficulty: 'medium' as const, duration: 60 as const }
-  const score = data.bests[bestKey(config)]
-  return score === undefined ? null : { score, config }
-}
-
 /** Whether the player has finished at least one round of this mode, at any settings. */
 export function hasPlayed(modeId: ModeId): boolean {
   return load().rounds.some((r) => r.modeId === modeId)

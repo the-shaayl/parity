@@ -1,6 +1,5 @@
 import type { ModeId } from '../engine/types'
 import { MODES } from '../modes'
-import { getModeBest } from '../storage/stats'
 
 export function Home({ onSelect }: { onSelect: (id: ModeId) => void }) {
   return (
@@ -12,7 +11,6 @@ export function Home({ onSelect }: { onSelect: (id: ModeId) => void }) {
       <ol>
         {MODES.map((mode) => {
           const ready = mode.status === 'ready'
-          const best = ready ? getModeBest(mode.id) : null
           return (
             <li key={mode.id}>
               <button
@@ -26,17 +24,7 @@ export function Home({ onSelect }: { onSelect: (id: ModeId) => void }) {
                 >
                   {mode.name}
                 </span>
-                <span className="text-sm text-muted">
-                  {!ready ? (
-                    'Soon'
-                  ) : best ? (
-                    <>
-                      Best <span className="text-fg">{best.score}</span>
-                    </>
-                  ) : (
-                    '—'
-                  )}
-                </span>
+                {!ready && <span className="text-sm text-muted">Soon</span>}
                 <span
                   className={`w-4 text-right text-muted transition-colors ${ready ? 'group-hover:text-accent' : 'invisible'}`}
                   aria-hidden
