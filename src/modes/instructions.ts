@@ -17,7 +17,7 @@ export const INSTRUCTIONS: Partial<Record<ModeId, Instructions>> = {
     answer: [
       'Solve each question, like 9 × 7 = 63.',
       TYPE_IT,
-      'Use Include to choose your operations, including powers like 12² and factorials like 5!.',
+      'Use the Include menu to pick operations, like 12² or 5!',
     ],
   },
   percent: {

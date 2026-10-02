@@ -17,6 +17,10 @@
   --success: #2f6b3f;
   --danger: #a8442e;
   --bar: #cfcbc1;
+  /* How to play card: a warmer sheet with softer body text, on a slightly deeper page. */
+  --sheet: #fbf8f2;
+  --sheet-fg: #4a453d;
+  --sheet-backdrop: #e8e3d8;
   color-scheme: light;
 }
 
@@ -34,6 +38,9 @@
     --success: #9cc08a;
     --danger: #d98b74;
     --bar: #4a4944;
+    --sheet: #2e2d29;
+    --sheet-fg: #c7c2b8;
+    --sheet-backdrop: #181816;
     color-scheme: dark;
   }
 }
@@ -50,6 +57,9 @@
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-bar: var(--bar);
+  --color-sheet: var(--sheet);
+  --color-sheet-fg: var(--sheet-fg);
+  --color-sheet-backdrop: var(--sheet-backdrop);
   /* The device's own font: San Francisco on Apple devices, Roboto on Android. */
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, sans-serif;
 }
