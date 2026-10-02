@@ -48,4 +48,13 @@ export const INSTRUCTIONS: Partial<Record<ModeId, Instructions>> = {
       'Easy uses + and −. Hard adds × and ÷.',
     ],
   },
+  clock: {
+    goal: 'Answer as many questions as you can before time runs out.',
+    answer: [
+      'Type the smaller angle between the two hands in degrees, like 3:00 = 90.',
+      'The hour hand moves as the minutes pass, so at 7:30 it sits halfway between 7 and 8.',
+      TYPE_IT,
+      'Easy uses the hour and half hour. Hard adds quarter hours, so some answers end in .5.',
+    ],
+  },
 }

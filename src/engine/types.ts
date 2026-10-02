@@ -1,7 +1,7 @@
 export type ModeId = 'arithmetic' | 'percent' | 'rush' | 'audit' | 'clock'
 export type Difficulty = 'easy' | 'medium' | 'hard'
 /** Round length in seconds. 0 means there's no round clock (Audit ends on the first mistake). */
-export type Duration = 0 | 30 | 60 | 120
+export type Duration = 0 | 30 | 60 | 90 | 120
 
 export const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
 export const DURATIONS: Duration[] = [30, 60, 120]
@@ -26,6 +26,8 @@ export interface Question {
   tag: string
   /** Optional worked solution shown when reviewing a miss. */
   explanation?: string
+  /** For Clock: the time to draw on the clock face. */
+  time?: { hour: number; minute: number }
 }
 
 export interface GeneratorContext {
@@ -54,6 +56,8 @@ export interface ModeDef {
   kind?: 'sprint' | 'rush' | 'audit'
   /** When set, the round length is fixed and the setup screen doesn't offer a choice. */
   fixedDuration?: Duration
+  /** Round lengths offered on the setup screen, if not the usual 30/60/120s. */
+  durations?: Duration[]
   /** Levels offered on the setup screen, if not all three. */
   levels?: Difficulty[]
   /** Toggles shown on the setup screen (e.g. which operations to include). */
