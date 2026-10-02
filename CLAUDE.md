@@ -49,12 +49,12 @@ The owner strongly dislikes anything that looks AI-generated. Keep to these:
 
 ## Product decisions already made
 
-- Rounds are timed sprints. Rush is fixed at 2 minutes; Clock offers 30/60/90s; other modes offer 30/60/120s.
+- Rounds are timed sprints. Rush is fixed at 2 minutes; other modes offer 30/60/120s.
 - Blitz powers: Easy squares up to 10², Medium up to 25², Hard up to 30² plus cubes up to 10³. Factorials up to 5!, 7!, 10!. At most one exponent and one factorial question per 30 seconds.
 - Delta has no "a → b" percentage-change questions. Every Delta answer is a whole number. Easy and Medium: % of and sale price (Easy sale prices are multiples of $50, discounts multiples of 10%). Hard adds net % change. No original price or total discount questions.
 - Rush levels: Easy uses only numbers 1 to 10, Medium has one of 25 or 50, Hard has one of 25, 50, 75 or 100.
 - Slice, Compound and Outs were dropped.
-- Clock (from the Dial spec): shows a time as digits and on an analog clock; type the smaller angle between the hands (0 to 180). Easy (:00 and :30, answers multiples of 15) and Hard (quarter hours, answers can end in .5) only. No 12:00, never the same time twice in a row. Uses the shared keypad and round screen like Blitz and Delta.
+- Clock (from the Dial spec): shows a time as digits, plus an analog clock only if the Show clock switch on the setup screen is on (off by default); type the smaller angle between the hands (0 to 180). Easy (:00 and :30, answers multiples of 15) and Hard (quarter hours, answers can end in .5) only. No 12:00, never the same time twice in a row. Uses the shared keypad and round screen like Blitz and Delta.
 - Audit (from the Sudden Death spec): true/false equations, one miss or timeout ends the run, Easy (+ −) and Hard (+ − × ÷) only, no round clock. Time per equation 3s (2.7s Hard) down to 1.5s by a score of 40.
 - Rush has no streak multiplier. Scoring: 3 exact, 2 very close, 1 close. Submit locks in the selected number.
 - Home screen shows mode names only (no personal bests). Bests live on each mode's setup screen.
