@@ -2,6 +2,12 @@
 
 Timed mental math drills for case and finance interviews. Installable web app (PWA) — works offline and can be added to a phone's home screen.
 
+**Live:** https://parity-opal.vercel.app
+
+## Publishing
+
+The repo is connected to Vercel. Every push to `main` builds and publishes automatically within about a minute. To install on iPhone: open the link in Safari → Share → Add to Home Screen.
+
 ## Commands
 
 | Command | What it does |
