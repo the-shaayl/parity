@@ -4,6 +4,7 @@ import { Home } from './screens/Home'
 import { getMode } from './modes'
 import { Play } from './screens/Play'
 import { RushPlay } from './screens/RushPlay'
+import { AuditPlay } from './screens/AuditPlay'
 import { Results, type SaveInfo } from './screens/Results'
 import { Setup } from './screens/Setup'
 import { recordRound, saveLastConfig } from './storage/stats'
@@ -60,6 +61,8 @@ export default function App() {
         <div className="flex flex-1 flex-col">
           {getMode(route.config.modeId).kind === 'rush' ? (
             <RushPlay key={route.round} config={route.config} onQuit={back} onFinish={finish} />
+          ) : getMode(route.config.modeId).kind === 'audit' ? (
+            <AuditPlay key={route.round} config={route.config} onQuit={back} onFinish={finish} />
           ) : (
             <Play key={route.round} config={route.config} onQuit={back} onFinish={finish} />
           )}

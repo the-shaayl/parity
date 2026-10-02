@@ -1,6 +1,7 @@
-export type ModeId = 'arithmetic' | 'percent' | 'fractions' | 'rush' | 'rule72' | 'clock' | 'poker'
+export type ModeId = 'arithmetic' | 'percent' | 'fractions' | 'rush' | 'audit' | 'rule72' | 'clock' | 'poker'
 export type Difficulty = 'easy' | 'medium' | 'hard'
-export type Duration = 30 | 60 | 120
+/** Round length in seconds. 0 means there's no round clock (Audit ends on the first mistake). */
+export type Duration = 0 | 30 | 60 | 120
 
 export const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
 export const DURATIONS: Duration[] = [30, 60, 120]
@@ -48,9 +49,11 @@ export interface ModeDef {
   name: string
   status: 'ready' | 'soon'
   /** 'rush' modes have their own play screen instead of the question-and-answer one. */
-  kind?: 'sprint' | 'rush'
+  kind?: 'sprint' | 'rush' | 'audit'
   /** When set, the round length is fixed and the setup screen doesn't offer a choice. */
   fixedDuration?: Duration
+  /** Levels offered on the setup screen, if not all three. */
+  levels?: Difficulty[]
   /** Toggles shown on the setup screen (e.g. which operations to include). */
   options?: ModeOption[]
   /** Formats answers for display, e.g. adding a % or ° sign. */

@@ -11,7 +11,7 @@ function defaultConfig(modeId: ModeId): SprintConfig {
   const mode = getMode(modeId)
   return {
     modeId,
-    difficulty: 'medium',
+    difficulty: mode.levels?.includes('medium') === false ? mode.levels[0] : 'medium',
     duration: 60,
     options: Object.fromEntries((mode.options ?? []).map((o) => [o.id, o.defaultOn])),
   }
@@ -27,12 +27,17 @@ export function Setup({
   onStart: (config: SprintConfig) => void
 }) {
   const mode = getMode(modeId)
+  const levels = mode.levels ?? DIFFICULTIES
   const [config, setConfig] = useState<SprintConfig>(() => {
     // Merge with defaults so options added in later versions of the app still get a value.
     const defaults = defaultConfig(modeId)
     const last = getLastConfig(modeId)
     const merged = last ? { ...defaults, ...last, options: { ...defaults.options, ...last.options } } : defaults
-    return mode.fixedDuration ? { ...merged, duration: mode.fixedDuration } : merged
+    const withDuration = mode.fixedDuration !== undefined ? { ...merged, duration: mode.fixedDuration } : merged
+    // A saved level this mode doesn't offer (e.g. Medium for Audit) falls back to the default.
+    return levels.includes(withDuration.difficulty)
+      ? withDuration
+      : { ...withDuration, difficulty: defaults.difficulty }
   })
   const best = getBest(config)
   const recent = getRecentRounds(config)
@@ -62,7 +67,7 @@ export function Setup({
       )}
 
       <div>
-        {!mode.fixedDuration && (
+        {mode.fixedDuration === undefined && (
           <OptionRow
             label="Time"
             value={config.duration}
@@ -73,7 +78,7 @@ export function Setup({
         <OptionRow
           label="Level"
           value={config.difficulty}
-          options={DIFFICULTIES.map((d) => ({ value: d, label: d[0].toUpperCase() + d.slice(1) }))}
+          options={levels.map((d) => ({ value: d, label: d[0].toUpperCase() + d.slice(1) }))}
           onChange={(difficulty) => setConfig({ ...config, difficulty })}
         />
 

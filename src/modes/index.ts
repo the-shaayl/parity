@@ -1,5 +1,6 @@
 import type { ModeDef, ModeId } from '../engine/types'
 import { generateArithmetic, OPS } from './arithmetic/generator'
+import { AUDIT_LEVELS } from './audit/engine'
 import { generateFractions } from './fractions/generator'
 import { generatePercent } from './percent/generator'
 
@@ -34,6 +35,14 @@ export const MODES: ModeDef[] = [
     status: 'ready',
     kind: 'rush',
     fixedDuration: 120,
+  },
+  {
+    id: 'audit',
+    name: 'Audit',
+    status: 'ready',
+    kind: 'audit',
+    fixedDuration: 0,
+    levels: AUDIT_LEVELS,
   },
   {
     id: 'rule72',
