@@ -43,13 +43,16 @@ The owner strongly dislikes anything that looks AI-generated. Keep to these:
 - **Shape:** 2px corners at most. Group things with spacing, not boxes or lines.
 - **Motion:** quiet. A short fade or a small shake on a wrong answer, nothing more.
 - **Copy:** sentence case, short plain sentences, everyday words. **No em dashes.** No hype or "AI" phrasing ("level up your game", "master", "unlock", "dive in").
-- **Mode names:** one word (Blitz, Delta, Slice, Rush, Compound, Dial, Outs).
+- **Mode names:** one word (Blitz, Delta, Rush, Clock).
 - When a choice is a matter of taste (fonts, colours, layout), show options side by side and let the owner pick rather than guessing.
 
 ## Product decisions already made
 
 - Rounds are timed sprints. Rush is fixed at 2 minutes; other modes offer 30/60/120s.
-- Delta has no "a → b" percentage-change questions.
+- Blitz powers: Easy squares up to 10², Medium up to 25², Hard up to 30² plus cubes up to 10³. Factorials up to 5!, 7!, 10!. At most one exponent and one factorial question per 30 seconds.
+- Delta has no "a → b" percentage-change questions. Every Delta answer is a whole number. Easy and Medium: % of and sale price (Easy sale prices are multiples of $50, discounts multiples of 10%). Hard adds net % change. No original price or total discount questions.
+- Rush levels: Easy uses only numbers 1 to 10, Medium has one of 25 or 50, Hard has one of 25, 50, 75 or 100.
+- Slice, Compound and Outs were dropped. Clock is the only mode marked Soon.
 - Rush has no streak multiplier. Scoring: 3 exact, 2 very close, 1 close. Submit locks in the selected number.
 - Home screen shows mode names only (no personal bests). Bests live on each mode's setup screen.
 - How to play: two sections only, Goal and How to answer. No question lists, no explaining Skip/Back.

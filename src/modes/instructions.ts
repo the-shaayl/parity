@@ -26,15 +26,7 @@ export const INSTRUCTIONS: Partial<Record<ModeId, Instructions>> = {
       'Work out the percentage, like 25% of 240 = 36.',
       'The small label above a question, like Sale price, tells you what to find.',
       TYPE_IT,
-      'Answers are whole numbers or have one decimal place.',
-    ],
-  },
-  fractions: {
-    goal: 'Answer as many questions as you can before time runs out.',
-    answer: [
-      'Turn each fraction into a percentage, like 3/8 = 37.5.',
-      TYPE_IT,
-      'Trickier fractions give you four options instead. Options are rounded, so 1/3 shows as 33.3%.',
+      'Answers are always whole numbers.',
     ],
   },
   rush: {

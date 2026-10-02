@@ -70,9 +70,9 @@ interface LevelRules {
 }
 
 const LEVELS: Record<Difficulty, LevelRules> = {
-  easy: { big: [25, 50], bigCount: 1, targetRange: [20, 100], minPar: 2 },
-  medium: { big: [25, 50, 75, 100], bigCount: 1, targetRange: [50, 250], minPar: 2 },
-  hard: { big: [25, 50, 75, 100], bigCount: 2, targetRange: [100, 500], minPar: 3 },
+  easy: { big: [], bigCount: 0, targetRange: [10, 50], minPar: 2 },
+  medium: { big: [25, 50], bigCount: 1, targetRange: [20, 100], minPar: 2 },
+  hard: { big: [25, 50, 75, 100], bigCount: 1, targetRange: [50, 250], minPar: 2 },
 }
 
 /**

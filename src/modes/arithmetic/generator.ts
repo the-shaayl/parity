@@ -65,26 +65,25 @@ const RANGES: Record<'add' | 'mul' | 'div', Record<Difficulty, [Range, Range]>> 
 /** [base, exponent] pairs available at each difficulty. */
 function powerPool(difficulty: Difficulty): [number, number][] {
   const pool: [number, number][] = []
-  const add = (bases: Range, exp: number, skipTens = false) => {
-    for (let b = bases[0]; b <= bases[1]; b++) if (!(skipTens && b % 10 === 0)) pool.push([b, exp])
+  const add = ([min, max]: Range, exp: number) => {
+    for (let b = min; b <= max; b++) pool.push([b, exp])
   }
   if (difficulty === 'easy') {
-    add([2, 15], 2, true)
+    add([2, 10], 2)
   } else if (difficulty === 'medium') {
-    add([11, 25], 2, true)
-    add([2, 6], 3)
-    for (let e = 5; e <= 10; e++) pool.push([2, e])
+    add([2, 25], 2)
   } else {
-    add([26, 60], 2, true)
-    add([5, 12], 3)
-    for (let e = 8; e <= 12; e++) pool.push([2, e])
-    for (let e = 3; e <= 6; e++) pool.push([3, e])
-    for (let e = 3; e <= 5; e++) pool.push([5, e])
+    add([2, 30], 2)
+    add([2, 10], 3)
   }
   return pool
 }
 
-const FACT_RANGE: Record<Difficulty, Range> = { easy: [3, 6], medium: [4, 8], hard: [6, 10] }
+const FACT_RANGE: Record<Difficulty, Range> = { easy: [3, 5], medium: [3, 7], hard: [3, 10] }
+
+/** Exponents and factorials are limited to one of each per this many milliseconds. */
+export const RARE_OP_GAP_MS = 30_000
+const RARE_OPS: Op[] = ['pow', 'fact']
 
 function factorial(n: number): number {
   return n <= 1 ? 1 : n * factorial(n - 1)
@@ -142,9 +141,13 @@ function makeQuestion(op: Op, difficulty: Difficulty, rng: Rng): Question {
   }
 }
 
-export function generateArithmetic({ difficulty, options, rng, previous }: GeneratorContext): Question {
+export function generateArithmetic({ difficulty, options, rng, previous, sinceShown }: GeneratorContext): Question {
   const enabled = OPS.filter((o) => options[o.id])
-  const pool = (enabled.length ? enabled : OPS.filter((o) => o.defaultOn)).map((o) => ({
+  const chosen = enabled.length ? enabled : OPS.filter((o) => o.defaultOn)
+  // Hold back an exponent or factorial if one was shown recently, unless nothing else is switched on.
+  const tooSoon = (op: Op) => RARE_OPS.includes(op) && (sinceShown?.[op] ?? Infinity) < RARE_OP_GAP_MS
+  const allowed = chosen.filter((o) => !tooSoon(o.id))
+  const pool = (allowed.length ? allowed : chosen).map((o) => ({
     value: o.id,
     weight: o.weight,
   }))
