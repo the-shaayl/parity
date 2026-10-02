@@ -134,3 +134,8 @@ export function getModeBest(modeId: ModeId): { score: number; config: ConfigKey 
   const score = data.bests[bestKey(config)]
   return score === undefined ? null : { score, config }
 }
+
+/** Whether the player has finished at least one round of this mode, at any settings. */
+export function hasPlayed(modeId: ModeId): boolean {
+  return load().rounds.some((r) => r.modeId === modeId)
+}
