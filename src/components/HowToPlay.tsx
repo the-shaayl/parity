@@ -45,8 +45,8 @@ export function HowToPlay({
       aria-labelledby="how-to-play-title"
       className="anim-question safe-area fixed inset-0 z-50 flex overflow-y-auto bg-sheet-backdrop"
     >
-      {/* A soft card sized to its content, centred on the page. */}
-      <div className="m-auto w-full max-w-md rounded-2xl bg-sheet px-6 pb-6 pt-4">
+      {/* A warm sheet sized to its content, centred on the page. */}
+      <div className="m-auto w-full max-w-md rounded-xs bg-sheet px-6 pb-6 pt-4">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted">{modeName}</span>
           <button
@@ -79,7 +79,7 @@ export function HowToPlay({
           </div>
 
           <div className="mt-10">
-            <Button className="w-full rounded-xl!" onClick={confirm}>
+            <Button className="w-full" onClick={confirm}>
               Got it
             </Button>
             <label className="mt-4 flex cursor-pointer items-center justify-center gap-2 text-sm text-muted">
