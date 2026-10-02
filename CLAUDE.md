@@ -10,6 +10,7 @@ Timed mental math drills for case and finance interview prep. Installable web ap
 - **Never commit or push to `main`.** Anything on `main` goes live within a minute.
 - Start from an up-to-date `main`, make a branch (`git switch -c short-description`), commit there, push the branch, and open a pull request with `gh pr create`.
 - Every pull request gets an automatic **Checks** run (lint, tests, build) and a **Vercel preview link**. The other person reviews the preview on their phone and approves before merging.
+- Right after opening a pull request, turn on auto-merge: `gh pr merge --auto --merge`. It then merges by itself the moment it's approved and the checks pass, so nobody has to come back and press Merge.
 - Before pushing, run the same checks locally: `npm run lint && npm test && npm run build`.
 - Pull before starting work (`git switch main && git pull`) so you don't build on old code.
 
