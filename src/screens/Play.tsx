@@ -95,7 +95,9 @@ export function Play({
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return
-      if (e.key === ' ') {
+      if (e.key === 'Escape') {
+        onQuit()
+      } else if (e.key === ' ') {
         e.preventDefault()
         skip()
       } else if (question.input === 'choice') {
@@ -129,14 +131,7 @@ export function Play({
         >
           {secondsLeft}
         </span>
-        <button
-          type="button"
-          onClick={onQuit}
-          aria-label="Quit round"
-          className="flex items-center gap-1.5 text-sm text-muted hover:text-fg"
-        >
-          <span aria-hidden>×</span> {mode.name}
-        </button>
+        <span className="text-sm text-muted">{mode.name}</span>
         <span className="w-16 text-right text-3xl font-semibold" aria-label={`Score ${score}`}>
           {score}
         </span>
@@ -215,15 +210,25 @@ export function Play({
             ))}
           </div>
         )}
+      </div>
 
-        <div className="mt-3 flex items-center justify-between text-sm text-muted">
-          <span className="hidden pointer-fine:inline">
-            {question.input === 'type' ? 'Type your answer' : 'Press 1–4'}, space to skip
-          </span>
-          <button type="button" onClick={skip} className="-mx-2 ml-auto px-2 py-2 hover:text-fg">
-            Skip
-          </button>
-        </div>
+      {/* Bottom line: skip on the left, back (leave the round) on the right. Kept outside the
+          answer area so Back still works during the 3-2-1 countdown. */}
+      <div className="mt-3 flex items-center justify-between text-sm text-muted">
+        <button
+          type="button"
+          onClick={skip}
+          disabled={!playing}
+          className="-mx-2 px-2 py-2 hover:text-fg disabled:opacity-40"
+        >
+          Skip
+        </button>
+        <span className="hidden pointer-fine:inline">
+          {question.input === 'type' ? 'Type your answer' : 'Press 1–4'}, space to skip, esc to go back
+        </span>
+        <button type="button" onClick={onQuit} className="-mx-2 px-2 py-2 hover:text-fg">
+          Back
+        </button>
       </div>
     </div>
   )
