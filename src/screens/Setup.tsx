@@ -28,12 +28,18 @@ export function Setup({
 }) {
   const mode = getMode(modeId)
   const levels = mode.levels ?? DIFFICULTIES
+  const durations = mode.durations ?? DURATIONS
   const [config, setConfig] = useState<SprintConfig>(() => {
     // Merge with defaults so options added in later versions of the app still get a value.
     const defaults = defaultConfig(modeId)
     const last = getLastConfig(modeId)
     const merged = last ? { ...defaults, ...last, options: { ...defaults.options, ...last.options } } : defaults
-    const withDuration = mode.fixedDuration !== undefined ? { ...merged, duration: mode.fixedDuration } : merged
+    const withDuration =
+      mode.fixedDuration !== undefined
+        ? { ...merged, duration: mode.fixedDuration }
+        : durations.includes(merged.duration)
+          ? merged
+          : { ...merged, duration: defaults.duration }
     // A saved level this mode doesn't offer (e.g. Medium for Audit) falls back to the default.
     return levels.includes(withDuration.difficulty)
       ? withDuration
@@ -71,7 +77,7 @@ export function Setup({
           <OptionRow
             label="Time"
             value={config.duration}
-            options={DURATIONS.map((d) => ({ value: d, label: `${d}s` }))}
+            options={durations.map((d) => ({ value: d, label: `${d}s` }))}
             onChange={(duration) => setConfig({ ...config, duration })}
           />
         )}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef } from 'react'
+import { ClockFace } from '../components/ClockFace'
 import { Keypad } from '../components/Keypad'
 import { Icons } from '../components/icons'
 import type { Key } from '../engine/checkAnswer'
@@ -127,16 +128,27 @@ export function Play({
       </div>
 
       {/* Question */}
-      <div className="flex flex-1 items-center justify-center py-6">
+      <div className={`flex flex-1 items-center justify-center ${question.time ? 'py-2' : 'py-6'}`}>
         {playing ? (
           <div key={`q-${seq}`} className={`w-full text-center ${kind === 'wrong' ? 'anim-shake' : 'anim-question'}`}>
             {question.label && <p className="mb-4 text-sm text-muted">{question.label}</p>}
             <p
-              className={`font-semibold leading-none tracking-tight break-words ${promptSize(question.prompt)}`}
+              className={`font-semibold leading-none tracking-tight break-words ${
+                question.time ? 'text-4xl sm:text-5xl' : promptSize(question.prompt)
+              }`}
               aria-live="polite"
             >
               {question.prompt}
             </p>
+            {question.time && (
+              // Takes whatever height is left above the keypad (about 33rem on touch screens),
+              // so nothing scrolls even on small phones.
+              <ClockFace
+                hour={question.time.hour}
+                minute={question.time.minute}
+                className="mx-auto mt-3 aspect-square w-full max-w-[clamp(7rem,calc(100dvh-33rem),15rem)] pointer-fine:max-w-60"
+              />
+            )}
           </div>
         ) : (
           <p key={`count-${count}`} className="text-7xl font-semibold text-accent" aria-live="assertive">

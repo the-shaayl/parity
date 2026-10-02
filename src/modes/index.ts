@@ -1,6 +1,7 @@
 import type { ModeDef, ModeId } from '../engine/types'
 import { generateArithmetic, OPS } from './arithmetic/generator'
 import { AUDIT_LEVELS } from './audit/engine'
+import { CLOCK_LEVELS, generateClock } from './clock/generator'
 import { generatePercent } from './percent/generator'
 
 /** Every game mode in the app. Adding a mode = adding an entry here plus its generator. */
@@ -39,8 +40,13 @@ export const MODES: ModeDef[] = [
   {
     id: 'clock',
     name: 'Clock',
-    status: 'soon',
+    status: 'ready',
     unit: '°',
+    levels: CLOCK_LEVELS,
+    durations: [30, 60, 90],
+    // Only Hard has answers ending in .5.
+    keypad: (difficulty) => ({ decimal: difficulty === 'hard', negative: false }),
+    generate: generateClock,
   },
 ]
 
