@@ -41,15 +41,17 @@ export function HowToPlay({
           How to play
         </h1>
 
-        <div className="mt-10 flex flex-col gap-9">
+        <div className="mt-10 flex flex-col gap-8">
           <Section title="Goal">
-            <p className="text-xl font-semibold leading-snug">{instructions.goal}</p>
+            <p className="font-semibold">{instructions.goal}</p>
           </Section>
-          <Section title="Questions">
-            <List items={instructions.questions} />
-          </Section>
+
           <Section title="How to answer">
-            <List items={instructions.answer} />
+            <ul className="flex flex-col gap-3">
+              {instructions.answer.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
           </Section>
         </div>
 
@@ -66,18 +68,8 @@ export function HowToPlay({
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
-      <h2 className="mb-3 text-sm text-muted">{title}</h2>
+      <h2 className="mb-3 text-sm font-semibold text-muted">{title}</h2>
       {children}
     </section>
-  )
-}
-
-function List({ items }: { items: string[] }) {
-  return (
-    <ul className="flex flex-col gap-3 text-lg leading-snug">
-      {items.map((item) => (
-        <li key={item}>{item}</li>
-      ))}
-    </ul>
   )
 }

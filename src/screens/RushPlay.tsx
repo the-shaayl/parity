@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import type { AnswerRecord, RoundResult, SprintConfig } from '../engine/types'
 import { useRoundClock } from '../engine/useRoundClock'
-import { formatNumber } from '../lib/format'
 import { tap } from '../lib/haptics'
 import { applyOperation, generateRushPuzzle, OPS, pointsFor, type Op, type RushPuzzle } from '../modes/rush/engine'
 
@@ -23,7 +22,8 @@ interface RushState {
   puzzle: RushPuzzle
   initial: Slots
   slots: Slots
-  history: { text: string; before: Slots }[]
+  /** The numbers before each move, so Undo can step back. */
+  history: Slots[]
   selected: number | null
   op: Op | null
   records: AnswerRecord[]
@@ -39,6 +39,7 @@ type Action =
   | { type: 'undo' }
   | { type: 'restart' }
   | { type: 'skip'; now: number; next: RushPuzzle }
+  | { type: 'submit'; now: number; next: RushPuzzle }
 
 function load(puzzle: RushPuzzle, firstId: number) {
   const slots = puzzle.numbers.map((value, i) => ({ id: firstId + i, value }))
@@ -56,7 +57,6 @@ function finishPuzzle(state: RushState, final: number | null, now: number, next:
   const { target, numbers } = state.puzzle
   const skipped = final === null
   const points = skipped ? 0 : pointsFor(final, target)
-  const off = skipped ? 0 : Math.abs(final - target)
   const record: AnswerRecord = {
     question: { prompt: `${numbers.join(', ')} → ${target}`, answer: target, input: 'type', tag: 'rush' },
     correct: points === 3,
@@ -65,11 +65,7 @@ function finishPuzzle(state: RushState, final: number | null, now: number, next:
     given: final ?? undefined,
     points,
   }
-  const text = skipped
-    ? 'Skipped'
-    : points === 3
-      ? 'Exact, +3'
-      : `${formatNumber(off)} away${points > 0 ? `, +${points}` : ''}`
+  const text = skipped ? 'Skipped' : points === 3 ? 'Exact, +3' : points > 0 ? `Close, +${points}` : 'No points'
   return {
     ...state,
     ...load(next, state.nextId),
@@ -91,7 +87,7 @@ function reducer(state: RushState, action: Action): RushState {
     case 'undo': {
       const last = state.history[state.history.length - 1]
       if (!last) return state
-      return { ...state, slots: last.before, history: state.history.slice(0, -1), selected: null, op: null }
+      return { ...state, slots: last, history: state.history.slice(0, -1), selected: null, op: null }
     }
 
     case 'restart':
@@ -99,6 +95,13 @@ function reducer(state: RushState, action: Action): RushState {
 
     case 'skip':
       return finishPuzzle(state, null, action.now, action.next)
+
+    case 'submit': {
+      // Lock in the selected number when the player thinks it's close enough.
+      const chip = state.slots.find((c) => c?.id === state.selected)
+      if (!chip) return state
+      return finishPuzzle(state, chip.value, action.now, action.next)
+    }
 
     case 'chip': {
       const { selected, op } = state
@@ -120,7 +123,7 @@ function reducer(state: RushState, action: Action): RushState {
       const moved: RushState = {
         ...state,
         slots,
-        history: [...state.history, { text: `${a.value} ${OP_LABEL[op]} ${b.value} = ${value}`, before: state.slots }],
+        history: [...state.history, state.slots],
         // Keep the new number selected: most solutions carry on from the last result.
         selected: result.id,
         op: null,
@@ -168,8 +171,6 @@ export function RushPlay({
 
   const { puzzle, slots, selected, op, history } = state
   const selectedValue = slots.find((c) => c?.id === selected)?.value
-  const chips = slots.filter((c): c is Chip => c !== null)
-  const closest = Math.min(...chips.map((c) => Math.abs(c.value - puzzle.target)))
   const score = state.records.reduce((s, r) => s + (r.points ?? 0), 0)
   const lowTime = playing && secondsLeft <= 5
 
@@ -180,6 +181,8 @@ export function RushPlay({
   }
   const tapOp = (o: Op) => playing && dispatch({ type: 'op', op: o })
   const skip = () => playing && dispatch({ type: 'skip', now: performance.now(), next: generate(puzzle) })
+  const submit = () =>
+    playing && selected !== null && dispatch({ type: 'submit', now: performance.now(), next: generate(puzzle) })
   const undo = () => playing && dispatch({ type: 'undo' })
   const restart = () => playing && dispatch({ type: 'restart' })
 
@@ -197,6 +200,7 @@ export function RushPlay({
         e.preventDefault()
         skip()
       } else if (e.key === 'Backspace') undo()
+      else if (e.key === 'Enter') submit()
       else if (keyOps[e.key]) tapOp(keyOps[e.key])
       else if (/^[1-4]$/.test(e.key)) {
         const chip = slots[Number(e.key) - 1]
@@ -230,7 +234,7 @@ export function RushPlay({
         />
       </div>
 
-      {/* Target and live distance */}
+      {/* Target, and a brief note on how the last puzzle went */}
       <div className="flex flex-1 flex-col items-center justify-center py-4 text-center">
         {playing ? (
           <>
@@ -239,10 +243,8 @@ export function RushPlay({
               {puzzle.target}
             </p>
             <p className="mt-2 h-5 text-sm" aria-live="polite">
-              {showFeedback && state.feedback ? (
+              {showFeedback && state.feedback && (
                 <span className={state.feedback.good ? 'text-accent' : 'text-muted'}>{state.feedback.text}</span>
-              ) : (
-                <span className="text-muted">{formatNumber(closest)} away</span>
               )}
             </p>
           </>
@@ -252,13 +254,6 @@ export function RushPlay({
           </p>
         )}
       </div>
-
-      {/* Steps so far */}
-      <ol className="mb-3 h-[4.5rem] text-center text-sm leading-6 text-muted" aria-label="Your steps">
-        {history.map((h, i) => (
-          <li key={i}>{h.text}</li>
-        ))}
-      </ol>
 
       {/* Numbers */}
       <div className="grid grid-cols-2 gap-px border border-border bg-border" role="group" aria-label="Numbers">
@@ -300,7 +295,35 @@ export function RushPlay({
         ))}
       </div>
 
-      {/* Bottom line */}
+      {/* Undo, Restart, Submit */}
+      <div className="mt-3 grid grid-cols-3 gap-px border border-border bg-border">
+        <button
+          type="button"
+          onClick={undo}
+          disabled={!playing || history.length === 0}
+          className="h-12 bg-bg text-base text-fg transition-colors active:bg-surface-2 disabled:text-muted/40"
+        >
+          Undo
+        </button>
+        <button
+          type="button"
+          onClick={restart}
+          disabled={!playing || history.length === 0}
+          className="h-12 bg-bg text-base text-fg transition-colors active:bg-surface-2 disabled:text-muted/40"
+        >
+          Restart
+        </button>
+        <button
+          type="button"
+          onClick={submit}
+          disabled={!playing || selected === null}
+          className="h-12 bg-bg text-base font-semibold text-accent transition-colors active:bg-surface-2 disabled:font-normal disabled:text-muted/40"
+        >
+          Submit
+        </button>
+      </div>
+
+      {/* Bottom line: skip on the left, back on the right, same as the other modes */}
       <div className="mt-3 flex items-center justify-between text-sm text-muted">
         <button
           type="button"
@@ -309,22 +332,6 @@ export function RushPlay({
           className="-mx-2 px-2 py-2 hover:text-fg disabled:opacity-40"
         >
           Skip
-        </button>
-        <button
-          type="button"
-          onClick={undo}
-          disabled={!playing || history.length === 0}
-          className="px-2 py-2 hover:text-fg disabled:opacity-40"
-        >
-          Undo
-        </button>
-        <button
-          type="button"
-          onClick={restart}
-          disabled={!playing || history.length === 0}
-          className="px-2 py-2 hover:text-fg disabled:opacity-40"
-        >
-          Restart
         </button>
         <button type="button" onClick={onQuit} className="-mx-2 px-2 py-2 hover:text-fg">
           Back
