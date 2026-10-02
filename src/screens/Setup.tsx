@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { HowToPlay } from '../components/HowToPlay'
 import { RecentRuns } from '../components/RecentRuns'
 import { Button, OptionRow, TextButton } from '../components/ui'
 import { DIFFICULTIES, DURATIONS, type ModeId, type SprintConfig } from '../engine/types'
@@ -36,7 +37,7 @@ export function Setup({
   const best = getBest(config)
   const recent = getRecentRounds(config)
   const instructions = INSTRUCTIONS[modeId]
-  // Open the instructions automatically the first time someone visits a mode.
+  // Show How to play automatically the first time someone visits a mode.
   const [showHelp, setShowHelp] = useState(() => !hasPlayed(modeId))
   const enabledCount = Object.values(config.options).filter(Boolean).length
 
@@ -49,28 +50,15 @@ export function Setup({
 
   return (
     <div className="flex flex-1 flex-col">
-      <div>
+      <div className="flex items-baseline justify-between">
         <TextButton onClick={onBack}>← Back</TextButton>
+        {instructions && <TextButton onClick={() => setShowHelp(true)}>How to play</TextButton>}
       </div>
 
-      <h1 className="pt-8 text-4xl font-bold tracking-tight">{mode.name}</h1>
+      <h1 className="pb-8 pt-8 text-4xl font-bold tracking-tight">{mode.name}</h1>
 
-      {instructions && (
-        <div className="pb-6 pt-1">
-          <TextButton onClick={() => setShowHelp(!showHelp)} aria-expanded={showHelp}>
-            {showHelp ? 'Hide instructions' : 'How to play'}
-          </TextButton>
-          {showHelp && (
-            <div className="mt-2 max-w-prose">
-              <p className="font-semibold">{instructions.goal}</p>
-              <ul className="mt-3 space-y-2 text-muted">
-                {instructions.points.map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+      {instructions && showHelp && (
+        <HowToPlay modeName={mode.name} instructions={instructions} onClose={() => setShowHelp(false)} />
       )}
 
       <div>
