@@ -5,6 +5,7 @@ import { Button, OptionRow, TextButton } from '../components/ui'
 import { DIFFICULTIES, DURATIONS, type ModeId, type SprintConfig } from '../engine/types'
 import { getMode } from '../modes'
 import { INSTRUCTIONS } from '../modes/instructions'
+import { isHowToPlayHidden } from '../storage/howToPlay'
 import { getBest, getLastConfig, getRecentRounds, hasPlayed } from '../storage/stats'
 
 function defaultConfig(modeId: ModeId): SprintConfig {
@@ -42,8 +43,8 @@ export function Setup({
   const best = getBest(config)
   const recent = getRecentRounds(config)
   const instructions = INSTRUCTIONS[modeId]
-  // Show How to play automatically the first time someone visits a mode.
-  const [showHelp, setShowHelp] = useState(() => !hasPlayed(modeId))
+  // Show How to play automatically until someone has played a mode, unless they turned it off.
+  const [showHelp, setShowHelp] = useState(() => !hasPlayed(modeId) && !isHowToPlayHidden(modeId))
   const enabledCount = Object.values(config.options).filter(Boolean).length
 
   const toggleOption = (id: string) => {
@@ -63,7 +64,12 @@ export function Setup({
       <h1 className="pb-8 pt-8 text-4xl font-bold tracking-tight">{mode.name}</h1>
 
       {instructions && showHelp && (
-        <HowToPlay modeName={mode.name} instructions={instructions} onClose={() => setShowHelp(false)} />
+        <HowToPlay
+          modeId={modeId}
+          modeName={mode.name}
+          instructions={instructions}
+          onClose={() => setShowHelp(false)}
+        />
       )}
 
       <div>
