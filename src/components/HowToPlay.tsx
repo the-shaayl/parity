@@ -43,9 +43,10 @@ export function HowToPlay({
       role="dialog"
       aria-modal="true"
       aria-labelledby="how-to-play-title"
-      className="anim-question safe-area fixed inset-0 z-50 overflow-y-auto bg-bg"
+      className="anim-question safe-area fixed inset-0 z-50 flex overflow-y-auto bg-sheet-backdrop"
     >
-      <div className="mx-auto flex min-h-full w-full max-w-md flex-col">
+      {/* A soft card sized to its content, centred on the page. */}
+      <div className="m-auto w-full max-w-md rounded-2xl bg-sheet px-6 pb-6 pt-4">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted">{modeName}</span>
           <button
@@ -58,8 +59,7 @@ export function HowToPlay({
           </button>
         </div>
 
-        {/* Centred in the space below the header, so the button sits close to the text. */}
-        <div className="my-auto py-8">
+        <div className="pt-4">
           <h1 id="how-to-play-title" className="text-center text-4xl font-bold tracking-tight">
             How to play
           </h1>
@@ -79,7 +79,7 @@ export function HowToPlay({
           </div>
 
           <div className="mt-10">
-            <Button className="w-full" onClick={confirm}>
+            <Button className="w-full rounded-xl!" onClick={confirm}>
               Got it
             </Button>
             <label className="mt-4 flex cursor-pointer items-center justify-center gap-2 text-sm text-muted">
@@ -100,8 +100,8 @@ export function HowToPlay({
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="leading-relaxed">
-      <h2 className="mb-2 text-lg font-bold">{title}</h2>
+    <section className="leading-relaxed text-sheet-fg">
+      <h2 className="mb-2 text-lg font-bold text-fg">{title}</h2>
       {children}
     </section>
   )
