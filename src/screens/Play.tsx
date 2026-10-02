@@ -23,11 +23,25 @@ export function Play({
   const mode = getMode(config.modeId)
   const keypad = mode.keypad?.(config.difficulty) ?? { decimal: true, negative: true }
 
+  // When each kind of question (by tag) was last put on screen, so modes can space out rare ones.
+  const shownAt = useRef<Record<string, number>>({})
+
   const generate = useCallback(
-    (previous?: Question) =>
-      mode.generate!({ difficulty: config.difficulty, options: config.options, rng: Math.random, previous }),
+    (previous?: Question, sinceShown?: Record<string, number>) =>
+      mode.generate!({
+        difficulty: config.difficulty,
+        options: config.options,
+        rng: Math.random,
+        previous,
+        sinceShown,
+      }),
     [mode, config.difficulty, config.options],
   )
+  /** The next question, built while the player is mid-round (event handlers only). */
+  const nextQuestion = (previous: Question) => {
+    const now = performance.now()
+    return generate(previous, Object.fromEntries(Object.entries(shownAt.current).map(([tag, at]) => [tag, now - at])))
+  }
 
   const [state, dispatch] = useReducer(sprintReducer, undefined, () => initialSprintState(generate()))
   // The end-of-round callback needs the latest answers, not the ones from when it was created.
@@ -35,6 +49,9 @@ export function Play({
   useLayoutEffect(() => {
     stateRef.current = state
   })
+  useEffect(() => {
+    shownAt.current[state.question.tag] = performance.now()
+  }, [state.question])
 
   const { count, secondsLeft, playing } = useRoundClock(
     config.duration,
@@ -45,16 +62,16 @@ export function Play({
 
   const press = (key: Key) => {
     if (!playing) return
-    dispatch({ type: 'key', key, now: performance.now(), next: generate(question) })
+    dispatch({ type: 'key', key, now: performance.now(), next: nextQuestion(question) })
   }
   const choose = (value: number) => {
     if (!playing) return
     tap()
-    dispatch({ type: 'choose', value, now: performance.now(), next: generate(question) })
+    dispatch({ type: 'choose', value, now: performance.now(), next: nextQuestion(question) })
   }
   const skip = () => {
     if (!playing) return
-    dispatch({ type: 'skip', now: performance.now(), next: generate(question) })
+    dispatch({ type: 'skip', now: performance.now(), next: nextQuestion(question) })
   }
 
   // Physical keyboard support (laptops, tablets with keyboards).

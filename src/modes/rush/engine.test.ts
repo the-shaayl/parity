@@ -34,8 +34,8 @@ function solvable(pool: number[], target: number, moves: number): boolean {
 }
 
 describe('Rush puzzle generator', () => {
-  const ranges = { easy: [20, 100], medium: [50, 250], hard: [100, 500] } as const
-  const minPar = { easy: 2, medium: 2, hard: 3 } as const
+  const ranges = { easy: [10, 50], medium: [20, 100], hard: [50, 250] } as const
+  const minPar = { easy: 2, medium: 2, hard: 2 } as const
 
   for (const difficulty of DIFFICULTIES) {
     it(`only produces solvable puzzles with the right shape on ${difficulty}`, () => {
@@ -47,6 +47,7 @@ describe('Rush puzzle generator', () => {
         expect(p.target).toBeLessThanOrEqual(ranges[difficulty][1])
         expect(p.numbers).not.toContain(p.target)
         for (const n of p.numbers) expect(p.numbers.filter((m) => m === n).length).toBeLessThanOrEqual(2)
+        if (difficulty === 'easy') for (const n of p.numbers) expect(n).toBeLessThanOrEqual(10)
         // Solvable in exactly `par` moves, and not in fewer.
         expect(solvable(p.numbers, p.target, p.par), JSON.stringify(p)).toBe(true)
         expect(solvable(p.numbers, p.target, p.par - 1), JSON.stringify(p)).toBe(false)

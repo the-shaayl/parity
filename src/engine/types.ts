@@ -1,4 +1,4 @@
-export type ModeId = 'arithmetic' | 'percent' | 'fractions' | 'rush' | 'rule72' | 'clock' | 'poker'
+export type ModeId = 'arithmetic' | 'percent' | 'rush' | 'clock'
 export type Difficulty = 'easy' | 'medium' | 'hard'
 export type Duration = 30 | 60 | 120
 
@@ -33,6 +33,8 @@ export interface GeneratorContext {
   rng: Rng
   /** The previous question, so generators can avoid immediate repeats. */
   previous?: Question
+  /** Milliseconds since a question with each tag was last on screen this round. */
+  sinceShown?: Record<string, number>
 }
 
 export interface ModeOption {
