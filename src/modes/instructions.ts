@@ -14,11 +14,20 @@ const TYPE_IT = 'Type your answer. It moves on as soon as it is right.'
 export const INSTRUCTIONS: Partial<Record<ModeId, Instructions>> = {
   arithmetic: {
     goal: 'Answer as many questions as you can before time runs out.',
-    answer: [TYPE_IT],
+    answer: [
+      'Solve each question, like 9 × 7 = 63.',
+      TYPE_IT,
+      'Use Include to choose your operations, including powers like 12² and factorials like 5!.',
+    ],
   },
   percent: {
     goal: 'Answer as many questions as you can before time runs out.',
-    answer: [TYPE_IT, 'Answers are whole numbers or have one decimal place.'],
+    answer: [
+      'Work out the percentage, like 25% of 240 = 36.',
+      'The small label above a question, like Sale price, tells you what to find.',
+      TYPE_IT,
+      'Answers are whole numbers or have one decimal place.',
+    ],
   },
   fractions: {
     goal: 'Answer as many questions as you can before time runs out.',
