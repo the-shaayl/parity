@@ -1,22 +1,32 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 const COUNTDOWN_FROM = 3
+/** Pause between the clock reaching 0 and the results, so the "time's up" shake can be seen. */
+const TIME_UP_PAUSE_MS = 600
 
 /**
  * The 3-2-1 countdown and the round clock, shared by every timed mode.
  * `onStart` runs when play begins; `onEnd` runs exactly once when time is up.
  */
-export function useRoundClock(durationSeconds: number, onStart: (now: number) => void, onEnd: () => void) {
+export function useRoundClock(
+  durationSeconds: number,
+  onStart: (now: number) => void,
+  onEnd: () => void,
+  onTimeUp?: () => void,
+) {
   const [phase, setPhase] = useState<'countdown' | 'playing'>('countdown')
   const [count, setCount] = useState(COUNTDOWN_FROM)
   const [secondsLeft, setSecondsLeft] = useState(durationSeconds)
+  const [timeUp, setTimeUp] = useState(false)
 
   // Timers fire later than they're created, so they read the latest callbacks through refs.
   const onStartRef = useRef(onStart)
   const onEndRef = useRef(onEnd)
+  const onTimeUpRef = useRef(onTimeUp)
   useLayoutEffect(() => {
     onStartRef.current = onStart
     onEndRef.current = onEnd
+    onTimeUpRef.current = onTimeUp
   })
   const ended = useRef(false)
 
@@ -45,11 +55,14 @@ export function useRoundClock(durationSeconds: number, onStart: (now: number) =>
       if (left <= 0 && !ended.current) {
         ended.current = true
         clearInterval(interval)
-        onEndRef.current()
+        setTimeUp(true)
+        onTimeUpRef.current?.()
+        setTimeout(() => onEndRef.current(), TIME_UP_PAUSE_MS)
       }
     }, 100)
     return () => clearInterval(interval)
   }, [phase, durationSeconds])
 
-  return { phase, count, secondsLeft, playing: phase === 'playing' }
+  // `playing` turns off the moment time is up, so no answers count during the shake.
+  return { phase, count, secondsLeft, timeUp, playing: phase === 'playing' && !timeUp }
 }

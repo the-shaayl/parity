@@ -150,11 +150,30 @@
   animation: low-time 0.8s ease-in-out infinite;
 }
 
+.flash-fade {
+  animation: flash-fade 380ms ease-out forwards;
+}
+@keyframes flash-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.anim-time-up {
+  animation: shake 420ms ease-in-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .anim-shake,
+  .anim-time-up,
   .anim-question,
   .anim-low-time,
   .anim-caret {
     animation: none;
+  }
+  .flash-fade {
+    animation: flash-fade 1ms forwards;
   }
 }

@@ -6,6 +6,7 @@ import { chaseBestMessage } from '../lib/pace'
 import { getBest } from '../storage/stats'
 import { formatNumber } from '../lib/format'
 import { tap } from '../lib/haptics'
+import { ScreenFlash } from '../components/ScreenFlash'
 import { generateAudit, windowMs, type AuditQuestion } from '../modes/audit/engine'
 
 /** How long the final equation stays on screen after a miss, before the results appear. */
@@ -135,10 +136,14 @@ export function AuditPlay({
   })
 
   const { question, over } = state
+  const lastCorrect = state.records.at(-1)?.correct ?? false
   const equation = `${question.left} = ${formatNumber(question.shown)}`
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
+      <ScreenFlash kind={lastCorrect && !over ? 'correct' : null} seq={state.records.length} />
+      {/* A miss (or running out of time) turns the screen red behind the big ✗. */}
+      {over && <div aria-hidden className="pointer-events-none fixed inset-0 z-40 bg-danger/30" />}
       {/* Top line: mode and score */}
       <div className="flex items-baseline justify-between">
         <span className="w-16" />
@@ -170,12 +175,11 @@ export function AuditPlay({
             >
               {equation}
             </p>
-            <p className="mt-4 h-5 text-sm text-danger" aria-live="assertive">
-              {over &&
-                (over.reason === 'time'
-                  ? `Out of time. It was ${question.isTrue ? 'true' : 'false'}.`
-                  : `It was ${question.isTrue ? 'true' : 'false'}.`)}
-            </p>
+            {over && (
+              <span className="mt-6 text-[7rem] font-semibold leading-none text-danger" aria-label="Wrong" role="img">
+                ✗
+              </span>
+            )}
           </>
         ) : (
           <p className="text-7xl font-semibold text-accent" aria-live="assertive">
