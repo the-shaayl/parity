@@ -13,7 +13,7 @@ function defaultConfig(modeId: ModeId): SprintConfig {
     modeId,
     difficulty: mode.levels?.includes('medium') === false ? mode.levels[0] : 'medium',
     duration: 60,
-    options: Object.fromEntries((mode.options ?? []).map((o) => [o.id, o.defaultOn])),
+    options: Object.fromEntries([...(mode.options ?? []), ...(mode.switches ?? [])].map((o) => [o.id, o.defaultOn])),
   }
 }
 
@@ -28,7 +28,6 @@ export function Setup({
 }) {
   const mode = getMode(modeId)
   const levels = mode.levels ?? DIFFICULTIES
-  const durations = mode.durations ?? DURATIONS
   const [config, setConfig] = useState<SprintConfig>(() => {
     // Merge with defaults so options added in later versions of the app still get a value.
     const defaults = defaultConfig(modeId)
@@ -37,7 +36,8 @@ export function Setup({
     const withDuration =
       mode.fixedDuration !== undefined
         ? { ...merged, duration: mode.fixedDuration }
-        : durations.includes(merged.duration)
+        : // A length no longer offered (Clock briefly had 90s) falls back to the default.
+          DURATIONS.includes(merged.duration)
           ? merged
           : { ...merged, duration: defaults.duration }
     // A saved level this mode doesn't offer (e.g. Medium for Audit) falls back to the default.
@@ -50,7 +50,7 @@ export function Setup({
   const instructions = INSTRUCTIONS[modeId]
   // Show How to play automatically the first time someone visits a mode.
   const [showHelp, setShowHelp] = useState(() => !hasPlayed(modeId))
-  const enabledCount = Object.values(config.options).filter(Boolean).length
+  const enabledCount = (mode.options ?? []).filter((o) => config.options[o.id]).length
 
   const toggleOption = (id: string) => {
     const on = !config.options[id]
@@ -77,7 +77,7 @@ export function Setup({
           <OptionRow
             label="Time"
             value={config.duration}
-            options={durations.map((d) => ({ value: d, label: `${d}s` }))}
+            options={DURATIONS.map((d) => ({ value: d, label: `${d}s` }))}
             onChange={(duration) => setConfig({ ...config, duration })}
           />
         )}
@@ -87,6 +87,18 @@ export function Setup({
           options={levels.map((d) => ({ value: d, label: d[0].toUpperCase() + d.slice(1) }))}
           onChange={(difficulty) => setConfig({ ...config, difficulty })}
         />
+        {mode.switches?.map((s) => (
+          <OptionRow
+            key={s.id}
+            label={s.label}
+            value={config.options[s.id] ? 'on' : 'off'}
+            options={[
+              { value: 'off', label: 'Off' },
+              { value: 'on', label: 'On' },
+            ]}
+            onChange={(v) => setConfig({ ...config, options: { ...config.options, [s.id]: v === 'on' } })}
+          />
+        ))}
 
         {mode.options && (
           <div role="group" aria-label="Include" className="flex items-baseline gap-4 py-3">

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { seededRng } from '../../engine/rng'
 import type { Question } from '../../engine/types'
-import { CLOCK_LEVELS, clockAngle, clockTimes, generateClock } from './generator'
+import { CLOCK_LEVELS, clockAngle, clockTimes, formatTime, generateClock, SHOW_CLOCK } from './generator'
 
 describe('clockAngle', () => {
   it.each([
@@ -35,14 +35,14 @@ describe('Clock generator', () => {
       let previous: Question | undefined
       const seen = new Set<string>()
       for (let i = 0; i < 5000; i++) {
-        const q = generateClock({ difficulty, options: {}, rng, previous })
+        const q = generateClock({ difficulty, options: { [SHOW_CLOCK]: true }, rng, previous })
         expect(q.answer, q.prompt).toBe(solveFromPrompt(q.prompt))
         expect(q.answer).toBeGreaterThanOrEqual(0)
         expect(q.answer).toBeLessThanOrEqual(180)
         expect(q.prompt).not.toBe('12:00')
         expect(q.prompt).not.toBe(previous?.prompt)
         expect(q.prompt, 'no leading zero').toMatch(/^[1-9]\d?:\d\d$/)
-        expect(q.time, q.prompt).toBeDefined()
+        expect(q.time && formatTime(q.time.hour, q.time.minute), 'clock matches the digits').toBe(q.prompt)
         expect(q.input).toBe('type')
         if (difficulty === 'easy') {
           expect(q.time!.minute % 30, q.prompt).toBe(0)
@@ -58,6 +58,17 @@ describe('Clock generator', () => {
       expect(seen.size).toBe(clockTimes(difficulty).length)
     })
   }
+
+  it('shows only the digits when Show clock is off', () => {
+    const rng = seededRng(4)
+    for (const options of [{}, { [SHOW_CLOCK]: false }] as Record<string, boolean>[]) {
+      for (let i = 0; i < 200; i++) {
+        const q = generateClock({ difficulty: 'hard', options, rng })
+        expect(q.time).toBeUndefined()
+        expect(q.answer, q.prompt).toBe(solveFromPrompt(q.prompt))
+      }
+    }
+  })
 
   it('offers 23 times on Easy and 47 on Hard', () => {
     expect(clockTimes('easy')).toHaveLength(23)
