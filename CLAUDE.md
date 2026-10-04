@@ -13,6 +13,7 @@ Timed mental math drills for case and finance interview prep. Installable web ap
 - Right after opening a pull request, turn on auto-merge: `gh pr merge --auto --merge`. It then merges by itself the moment it's approved and the checks pass, so nobody has to come back and press Merge.
 - Before pushing, run the same checks locally: `npm run lint && npm test && npm run build`.
 - Pull before starting work (`git switch main && git pull`) so you don't build on old code.
+- No AI attribution: no `Co-Authored-By` trailer for Claude in commit messages and no "Generated with Claude Code" line in pull request descriptions. `.claude/settings.json` turns these off; don't add them by hand either.
 
 ## Commands
 
