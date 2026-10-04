@@ -1,9 +1,12 @@
 import { useState } from 'react'
+import { Icons } from '../components/icons'
 import { RecentRuns } from '../components/RecentRuns'
 import { Button, TextButton } from '../components/ui'
 import { summarize } from '../engine/sprint'
 import type { RoundResult } from '../engine/types'
+import { track } from '../lib/analytics'
 import { formatSeconds } from '../lib/format'
+import { shareScore, shareText } from '../lib/share'
 import { getMode } from '../modes'
 import { getRecentRounds } from '../storage/stats'
 
@@ -30,6 +33,17 @@ export function Results({
   const summary = summarize(records)
   const [recent] = useState(() => getRecentRounds(config))
 
+  // Share sheet on phones; copies the text on laptops. "Copied" shows briefly, then resets.
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'failed'>('idle')
+  const share = async () => {
+    const outcome = await shareScore(shareText(mode.name, mode.kind, config, summary.score))
+    if (outcome === 'shared' || outcome === 'copied') track('score_shared', { mode: mode.name, method: outcome })
+    if (outcome === 'copied' || outcome === 'failed') {
+      setShareStatus(outcome)
+      setTimeout(() => setShareStatus('idle'), 2000)
+    }
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-col pb-4">
       <div className="flex items-baseline justify-between text-sm text-muted">
@@ -42,7 +56,15 @@ export function Results({
       </div>
 
       <div className="pb-8 pt-12">
-        <p className="text-sm text-muted">{mode.kind === 'rush' ? 'Points' : 'Score'}</p>
+        <div className="flex items-baseline justify-between">
+          <p className="text-sm text-muted">{mode.kind === 'rush' ? 'Points' : 'Score'}</p>
+          <TextButton onClick={share} aria-live="polite">
+            <span className="inline-flex items-center gap-1.5">
+              <Icons.share />
+              {shareStatus === 'copied' ? 'Copied' : shareStatus === 'failed' ? 'Could not share' : 'Share score'}
+            </span>
+          </TextButton>
+        </div>
         <p className="text-8xl font-bold leading-none tracking-tighter text-accent">{summary.score}</p>
         <p className="mt-4 h-5 text-sm">
           {saveInfo.isNewBest ? (

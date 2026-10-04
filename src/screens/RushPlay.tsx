@@ -1,6 +1,9 @@
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import type { AnswerRecord, RoundResult, SprintConfig } from '../engine/types'
 import { useRoundClock } from '../engine/useRoundClock'
+import { PaceLine } from '../components/PaceLine'
+import { paceMessage } from '../lib/pace'
+import { getBest } from '../storage/stats'
 import { tap } from '../lib/haptics'
 import { applyOperation, generateRushPuzzle, OPS, pointsFor, type Op, type RushPuzzle } from '../modes/rush/engine'
 
@@ -172,6 +175,8 @@ export function RushPlay({
   const { puzzle, slots, selected, op, history } = state
   const selectedValue = slots.find((c) => c?.id === selected)?.value
   const score = state.records.reduce((s, r) => s + (r.points ?? 0), 0)
+  const [best] = useState(() => getBest(config))
+  const pace = playing ? paceMessage(score, best, config.duration - secondsLeft, config.duration) : null
   const lowTime = playing && secondsLeft <= 5
 
   const tapChip = (id: number) => {
@@ -233,6 +238,7 @@ export function RushPlay({
           style={{ animation: playing ? `drain ${config.duration}s linear forwards` : undefined }}
         />
       </div>
+      <PaceLine message={pace} />
 
       {/* Target, and a brief note on how the last puzzle went */}
       <div className="flex flex-1 flex-col items-center justify-center py-4 text-center">

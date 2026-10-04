@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { ClockFace } from '../components/ClockFace'
 import { Keypad } from '../components/Keypad'
+import { PaceLine } from '../components/PaceLine'
 import { Icons } from '../components/icons'
 import type { Key } from '../engine/checkAnswer'
 import { initialSprintState, sprintReducer } from '../engine/sprint'
@@ -8,7 +9,9 @@ import { useRoundClock } from '../engine/useRoundClock'
 import type { Question, RoundResult, SprintConfig } from '../engine/types'
 import { formatAnswer } from '../lib/format'
 import { tap } from '../lib/haptics'
+import { paceMessage } from '../lib/pace'
 import { getMode } from '../modes'
+import { getBest } from '../storage/stats'
 
 const KEYS = new Set(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-'])
 
@@ -60,6 +63,8 @@ export function Play({
     () => onFinish({ config, records: stateRef.current.records, finishedAt: Date.now() }),
   )
   const { question } = state
+  // The best before this round started, to show live how this round compares.
+  const [best] = useState(() => getBest(config))
 
   const press = (key: Key) => {
     if (!playing) return
@@ -98,6 +103,7 @@ export function Play({
   })
 
   const score = state.records.filter((r) => r.correct).length
+  const pace = playing ? paceMessage(score, best, config.duration - secondsLeft, config.duration) : null
   const lowTime = playing && secondsLeft <= 5
   const unit = question.unit ?? mode.unit
   const prefix = question.prefix
@@ -126,6 +132,7 @@ export function Play({
           style={{ animation: playing ? `drain ${config.duration}s linear forwards` : undefined }}
         />
       </div>
+      <PaceLine message={pace} />
 
       {/* Question */}
       <div className={`flex flex-1 items-center justify-center ${question.time ? 'py-2' : 'py-6'}`}>
@@ -166,7 +173,7 @@ export function Play({
           <>
             <div className="mb-4 flex h-16 items-center border-b-2 border-border">
               <output
-                className="flex flex-1 items-center justify-center pl-12 text-4xl font-semibold"
+                className="flex flex-1 items-center justify-center text-4xl font-semibold pointer-fine:pl-12"
                 aria-label="Your answer"
               >
                 {prefix && <span className="mr-1 text-muted">{prefix}</span>}
@@ -174,6 +181,7 @@ export function Play({
                 {playing && <span className="anim-caret mx-0.5 inline-block h-9 w-[2px] bg-accent" />}
                 {unit && <span className="ml-1 text-muted">{unit}</span>}
               </output>
+              {/* On touch screens Delete is on the keypad, next to 0; this one is for mouse users. */}
               <button
                 type="button"
                 aria-label="Delete"
@@ -181,7 +189,7 @@ export function Play({
                   e.preventDefault()
                   press('back')
                 }}
-                className="flex size-12 items-center justify-center text-muted active:text-fg"
+                className="hidden size-12 items-center justify-center text-muted active:text-fg pointer-fine:flex"
               >
                 <Icons.backspace />
               </button>

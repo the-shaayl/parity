@@ -38,7 +38,7 @@ Every question generator must have tests that generate thousands of questions an
 
 Anonymous usage analytics via PostHog, in `src/lib/analytics.ts`. It only runs where `VITE_POSTHOG_KEY` is set (the live site on Vercel), so local development sends nothing.
 
-- Events: `app_opened` (with `from_home_screen`), `app_installed` (first launch from the home screen), `round_started`, `round_finished` (with score), `round_quit`, `how_to_play_opened`. Rounds carry `mode`, `level` and `duration`.
+- Events: `app_opened` (with `from_home_screen`), `app_installed` (first launch from the home screen), `round_started`, `round_finished` (with score), `round_quit`, `how_to_play_opened`, `score_shared`. Rounds carry `mode`, `level` and `duration`.
 - Use `track('event_name', { ... })` for new events. Never send names, emails or anything that identifies a person. No cookies, no session recording, no autocapture.
 
 (agreed, do not drift)
