@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { ClockFace } from '../components/ClockFace'
 import { Keypad } from '../components/Keypad'
+import { ScreenFlash } from '../components/ScreenFlash'
 import { PaceLine } from '../components/PaceLine'
 import { Icons } from '../components/icons'
-import type { Key } from '../engine/checkAnswer'
+import { applyKey, isCorrectTyped, type Key } from '../engine/checkAnswer'
 import { initialSprintState, sprintReducer } from '../engine/sprint'
 import { useRoundClock } from '../engine/useRoundClock'
 import type { Question, RoundResult, SprintConfig } from '../engine/types'
@@ -50,29 +51,45 @@ export function Play({
   const [state, dispatch] = useReducer(sprintReducer, undefined, () => initialSprintState(generate()))
   // The end-of-round callback needs the latest answers, not the ones from when it was created.
   const stateRef = useRef(state)
+  // What's typed so far, kept in step with every key press (even several within one frame), so
+  // the right/wrong flash never judges a stale answer.
+  const typedRef = useRef(state.input)
   useLayoutEffect(() => {
     stateRef.current = state
+    typedRef.current = state.input
   })
   useEffect(() => {
     shownAt.current[state.question.tag] = performance.now()
   }, [state.question])
 
-  const { count, secondsLeft, playing } = useRoundClock(
+  const { count, secondsLeft, playing, timeUp } = useRoundClock(
     config.duration,
     (now) => dispatch({ type: 'start', now }),
     () => onFinish({ config, records: stateRef.current.records, finishedAt: Date.now() }),
   )
+
+  // Faint green flash for a right answer, red for a wrong one.
+  const [flash, setFlash] = useState<{ kind: 'correct' | 'wrong' | null; seq: number }>({ kind: null, seq: 0 })
+  const signal = (kind: 'correct' | 'wrong') => setFlash((f) => ({ kind, seq: f.seq + 1 }))
   const { question } = state
   // The best before this round started, to show live how this round compares.
   const [best] = useState(() => getBest(config))
 
   const press = (key: Key) => {
     if (!playing) return
+    // Typed answers are never "submitted", so a wrong one is when the player has typed as many
+    // characters as the answer has and it doesn't match. They can still delete and fix it.
+    const typed = applyKey(typedRef.current, key)
+    const right = isCorrectTyped(typed, question.answer)
+    typedRef.current = right ? '' : typed
+    if (right) signal('correct')
+    else if (key !== 'back' && typed.length >= String(question.answer).length) signal('wrong')
     dispatch({ type: 'key', key, now: performance.now(), next: nextQuestion(question) })
   }
   const choose = (value: number) => {
     if (!playing) return
     tap()
+    signal(Math.abs(value - question.answer) < 1e-9 ? 'correct' : 'wrong')
     dispatch({ type: 'choose', value, now: performance.now(), next: nextQuestion(question) })
   }
   const skip = () => {
@@ -111,7 +128,8 @@ export function Play({
   const seq = state.feedback?.seq ?? 0
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
+    <div className={`mx-auto flex w-full max-w-md flex-1 flex-col ${timeUp ? 'anim-time-up' : ''}`}>
+      <ScreenFlash kind={flash.kind} seq={flash.seq} />
       {/* Top line: time left, mode, score */}
       <div className="flex items-baseline justify-between">
         <span

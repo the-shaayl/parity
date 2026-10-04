@@ -6,18 +6,18 @@ const capitalise = (s: string) => s[0].toUpperCase() + s.slice(1)
 
 /**
  * The line people share after a round, e.g.
- * "I scored 34 on Blitz (Hard, 60s) in Parity. Can you beat it?"
+ * "Pack it up, you just got Parity mogged. 34 on Blitz (Hard, 60s)."
  */
 export function shareText(modeName: string, kind: string | undefined, config: SprintConfig, score: number): string {
   const level = capitalise(config.difficulty)
   const settings = config.duration > 0 ? `${level}, ${config.duration}s` : level
   const what =
     kind === 'audit'
-      ? `I got ${score} in a row on ${modeName} (${settings})`
+      ? `${score} in a row on ${modeName} (${settings})`
       : kind === 'rush'
-        ? `I scored ${score} ${score === 1 ? 'point' : 'points'} on ${modeName} (${settings})`
-        : `I scored ${score} on ${modeName} (${settings})`
-  return `${what} in Parity. Can you beat it?`
+        ? `${score} ${score === 1 ? 'point' : 'points'} on ${modeName} (${settings})`
+        : `${score} on ${modeName} (${settings})`
+  return `Pack it up, you just got Parity mogged. ${what}.`
 }
 
 /**

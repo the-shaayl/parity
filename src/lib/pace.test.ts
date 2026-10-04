@@ -38,13 +38,13 @@ describe('shareText', () => {
   })
   it('reads naturally for each kind of mode', () => {
     expect(shareText('Blitz', undefined, config('hard', 60), 34)).toBe(
-      'I scored 34 on Blitz (Hard, 60s) in Parity. Can you beat it?',
+      'Pack it up, you just got Parity mogged. 34 on Blitz (Hard, 60s).',
     )
     expect(shareText('Rush', 'rush', config('medium', 120), 1)).toBe(
-      'I scored 1 point on Rush (Medium, 120s) in Parity. Can you beat it?',
+      'Pack it up, you just got Parity mogged. 1 point on Rush (Medium, 120s).',
     )
     expect(shareText('Audit', 'audit', config('easy', 0), 23)).toBe(
-      'I got 23 in a row on Audit (Easy) in Parity. Can you beat it?',
+      'Pack it up, you just got Parity mogged. 23 in a row on Audit (Easy).',
     )
   })
   it('never uses em dashes or dot separators', () => {

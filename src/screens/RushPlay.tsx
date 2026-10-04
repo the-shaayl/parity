@@ -156,7 +156,7 @@ export function RushPlay({
     stateRef.current = state
   })
 
-  const { count, secondsLeft, playing } = useRoundClock(
+  const { count, secondsLeft, playing, timeUp } = useRoundClock(
     config.duration,
     (now) => dispatch({ type: 'start', now }),
     () => onFinish({ config, records: stateRef.current.records, finishedAt: Date.now() }),
@@ -184,7 +184,11 @@ export function RushPlay({
     tap()
     dispatch({ type: 'chip', id, now: performance.now(), next: generate(puzzle) })
   }
-  const tapOp = (o: Op) => playing && dispatch({ type: 'op', op: o })
+  const tapOp = (o: Op) => {
+    if (!playing) return
+    tap()
+    dispatch({ type: 'op', op: o })
+  }
   const skip = () => playing && dispatch({ type: 'skip', now: performance.now(), next: generate(puzzle) })
   const submit = () =>
     playing && selected !== null && dispatch({ type: 'submit', now: performance.now(), next: generate(puzzle) })
@@ -217,7 +221,8 @@ export function RushPlay({
   })
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
+    // No colour flashes in Rush, by design; just the small shake when time runs out.
+    <div className={`mx-auto flex w-full max-w-md flex-1 flex-col ${timeUp ? 'anim-time-up' : ''}`}>
       {/* Top line: time left, mode, score */}
       <div className="flex items-baseline justify-between">
         <span

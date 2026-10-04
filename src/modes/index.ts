@@ -39,7 +39,7 @@ export const MODES: ModeDef[] = [
   },
   {
     id: 'clock',
-    name: 'Clock',
+    name: 'Tick Tock',
     status: 'ready',
     unit: '°',
     levels: CLOCK_LEVELS,

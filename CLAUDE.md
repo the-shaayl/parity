@@ -51,7 +51,7 @@ The owner strongly dislikes anything that looks AI-generated. Keep to these:
 - **Shape:** 2px corners at most. Group things with spacing, not boxes or lines.
 - **Motion:** quiet. A short fade or a small shake on a wrong answer, nothing more.
 - **Copy:** sentence case, short plain sentences, everyday words. **No em dashes.** No hype or "AI" phrasing ("level up your game", "master", "unlock", "dive in").
-- **Mode names:** one word (Blitz, Delta, Rush, Audit, Clock).
+- **Mode names:** short (Blitz, Delta, Rush, Audit, Tick Tock). Tick Tock is the one two-word name, by the owner's choice.
 - When a choice is a matter of taste (fonts, colours, layout), show options side by side and let the owner pick rather than guessing.
 
 ## Product decisions already made
@@ -61,7 +61,7 @@ The owner strongly dislikes anything that looks AI-generated. Keep to these:
 - Delta has no "a → b" percentage-change questions. Every Delta answer is a whole number. Easy and Medium: % of and sale price (Easy sale prices are multiples of $50, discounts multiples of 10%). Hard adds net % change. No original price or total discount questions.
 - Rush levels: Easy uses only numbers 1 to 10, Medium has one of 25 or 50, Hard has one of 25, 50, 75 or 100.
 - Slice, Compound and Outs were dropped.
-- Clock (from the Dial spec): shows a time as digits, plus an analog clock only if the Show clock switch on the setup screen is on (off by default); type the smaller angle between the hands (0 to 180). Easy (:00 and :30, answers multiples of 15) and Hard (quarter hours, answers can end in .5) only. No 12:00, never the same time twice in a row. Uses the shared keypad and round screen like Blitz and Delta.
+- Tick Tock (code id `clock`, from the Dial spec): shows a time as digits, plus an analog clock only if the Show clock switch on the setup screen is on (off by default); type the smaller angle between the hands (0 to 180). Easy (:00 and :30, answers multiples of 15) and Hard (quarter hours, answers can end in .5) only. No 12:00, never the same time twice in a row. Uses the shared keypad and round screen like Blitz and Delta.
 - Audit (from the Sudden Death spec): true/false equations, one miss or timeout ends the run, Easy (+ −) and Hard (+ − × ÷) only, no round clock. Time per equation 3s (2.7s Hard) down to 1.5s by a score of 40.
 - Rush has no streak multiplier. Scoring: 3 exact, 2 very close, 1 close. Submit locks in the selected number.
 - Home screen shows mode names only (no personal bests). Bests live on each mode's setup screen.

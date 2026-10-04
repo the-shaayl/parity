@@ -82,7 +82,7 @@ export function Results({
       </div>
 
       {mode.kind === 'audit' ? (
-        // Audit: the score is how many in a row; show pace and how the run ended.
+        // Audit: the score is how many in a row; show pace.
         <>
           <dl className="grid grid-cols-3 gap-4">
             <Stat
@@ -97,13 +97,7 @@ export function Results({
                   : '—'
               }
             />
-            <Stat label="Ended by" value={records.at(-1)?.skipped ? 'Time' : 'Mistake'} />
           </dl>
-          {records.at(-1) && !records.at(-1)!.correct && (
-            <p className="mt-4 text-sm text-muted">
-              Ended on {records.at(-1)!.question.prompt}, which is {records.at(-1)!.question.answer ? 'true' : 'false'}.
-            </p>
-          )}
         </>
       ) : mode.kind === 'rush' ? (
         // Rush: points come from exact hits (3) and near misses (1–2), so show that split.
