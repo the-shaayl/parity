@@ -1,6 +1,9 @@
-import { useEffect, useLayoutEffect, useReducer, useRef } from 'react'
+import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import type { AnswerRecord, RoundResult, SprintConfig } from '../engine/types'
 import { useRoundClock } from '../engine/useRoundClock'
+import { PaceLine } from '../components/PaceLine'
+import { chaseBestMessage } from '../lib/pace'
+import { getBest } from '../storage/stats'
 import { formatNumber } from '../lib/format'
 import { tap } from '../lib/haptics'
 import { generateAudit, windowMs, type AuditQuestion } from '../modes/audit/engine'
@@ -89,6 +92,7 @@ export function AuditPlay({
   )
 
   const current = score(state.records)
+  const [best] = useState(() => getBest(config))
   const limit = windowMs(config.difficulty, current)
   const active = playing && !state.over
 
@@ -153,6 +157,7 @@ export function AuditPlay({
           />
         )}
       </div>
+      <PaceLine message={playing ? chaseBestMessage(current, best) : null} />
 
       {/* Equation */}
       <div className="flex flex-1 flex-col items-center justify-center py-6 text-center">

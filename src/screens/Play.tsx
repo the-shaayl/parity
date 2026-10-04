@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { ClockFace } from '../components/ClockFace'
 import { Keypad } from '../components/Keypad'
+import { PaceLine } from '../components/PaceLine'
 import { Icons } from '../components/icons'
 import type { Key } from '../engine/checkAnswer'
 import { initialSprintState, sprintReducer } from '../engine/sprint'
@@ -8,7 +9,9 @@ import { useRoundClock } from '../engine/useRoundClock'
 import type { Question, RoundResult, SprintConfig } from '../engine/types'
 import { formatAnswer } from '../lib/format'
 import { tap } from '../lib/haptics'
+import { paceMessage } from '../lib/pace'
 import { getMode } from '../modes'
+import { getBest } from '../storage/stats'
 
 const KEYS = new Set(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-'])
 
@@ -60,6 +63,8 @@ export function Play({
     () => onFinish({ config, records: stateRef.current.records, finishedAt: Date.now() }),
   )
   const { question } = state
+  // The best before this round started, to show live how this round compares.
+  const [best] = useState(() => getBest(config))
 
   const press = (key: Key) => {
     if (!playing) return
@@ -98,6 +103,7 @@ export function Play({
   })
 
   const score = state.records.filter((r) => r.correct).length
+  const pace = playing ? paceMessage(score, best, config.duration - secondsLeft, config.duration) : null
   const lowTime = playing && secondsLeft <= 5
   const unit = question.unit ?? mode.unit
   const prefix = question.prefix
@@ -126,6 +132,7 @@ export function Play({
           style={{ animation: playing ? `drain ${config.duration}s linear forwards` : undefined }}
         />
       </div>
+      <PaceLine message={pace} />
 
       {/* Question */}
       <div className={`flex flex-1 items-center justify-center ${question.time ? 'py-2' : 'py-6'}`}>
