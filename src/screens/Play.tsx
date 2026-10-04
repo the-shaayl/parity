@@ -173,7 +173,7 @@ export function Play({
           <>
             <div className="mb-4 flex h-16 items-center border-b-2 border-border">
               <output
-                className="flex flex-1 items-center justify-center pl-12 text-4xl font-semibold"
+                className="flex flex-1 items-center justify-center text-4xl font-semibold pointer-fine:pl-12"
                 aria-label="Your answer"
               >
                 {prefix && <span className="mr-1 text-muted">{prefix}</span>}
@@ -181,6 +181,7 @@ export function Play({
                 {playing && <span className="anim-caret mx-0.5 inline-block h-9 w-[2px] bg-accent" />}
                 {unit && <span className="ml-1 text-muted">{unit}</span>}
               </output>
+              {/* On touch screens Delete is on the keypad, next to 0; this one is for mouse users. */}
               <button
                 type="button"
                 aria-label="Delete"
@@ -188,7 +189,7 @@ export function Play({
                   e.preventDefault()
                   press('back')
                 }}
-                className="flex size-12 items-center justify-center text-muted active:text-fg"
+                className="hidden size-12 items-center justify-center text-muted active:text-fg pointer-fine:flex"
               >
                 <Icons.backspace />
               </button>

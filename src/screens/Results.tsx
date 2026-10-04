@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Icons } from '../components/icons'
 import { RecentRuns } from '../components/RecentRuns'
 import { Button, TextButton } from '../components/ui'
 import { summarize } from '../engine/sprint'
@@ -58,7 +59,10 @@ export function Results({
         <div className="flex items-baseline justify-between">
           <p className="text-sm text-muted">{mode.kind === 'rush' ? 'Points' : 'Score'}</p>
           <TextButton onClick={share} aria-live="polite">
-            {shareStatus === 'copied' ? 'Copied' : shareStatus === 'failed' ? 'Could not share' : 'Share score'}
+            <span className="inline-flex items-center gap-1.5">
+              <Icons.share />
+              {shareStatus === 'copied' ? 'Copied' : shareStatus === 'failed' ? 'Could not share' : 'Share score'}
+            </span>
           </TextButton>
         </div>
         <p className="text-8xl font-bold leading-none tracking-tighter text-accent">{summary.score}</p>

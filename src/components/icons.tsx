@@ -23,4 +23,10 @@ export const Icons = {
       <path d="M17 9l-5 6M12 9l5 6" />
     </svg>
   ),
+  share: () => (
+    <svg {...iconProps} width={16} height={16}>
+      <path d="M12 3v12M7 8l5-5 5 5" />
+      <path d="M5 12v8h14v-8" />
+    </svg>
+  ),
 }
