@@ -6,6 +6,7 @@ import { DIFFICULTIES, DURATIONS, type ModeId, type SprintConfig } from '../engi
 import { track } from '../lib/analytics'
 import { getMode } from '../modes'
 import { INSTRUCTIONS } from '../modes/instructions'
+import { hasSeenHowToPlay, markHowToPlaySeen } from '../storage/howToPlaySeen'
 import { getBest, getLastConfig, getRecentRounds, hasPlayed } from '../storage/stats'
 
 function defaultConfig(modeId: ModeId): SprintConfig {
@@ -49,13 +50,15 @@ export function Setup({
   const best = getBest(config)
   const recent = getRecentRounds(config)
   const instructions = INSTRUCTIONS[modeId]
-  // Show How to play automatically the first time someone visits a mode.
-  const [showHelp, setShowHelp] = useState(() => !hasPlayed(modeId))
-  // Count the automatic first-visit opening once, when the screen appears.
+  // Show How to play by itself only the first time someone visits a mode, not every time they
+  // come back to this screen (e.g. after quitting a round before finishing one).
+  const [showHelp, setShowHelp] = useState(() => !hasPlayed(modeId) && !hasSeenHowToPlay(modeId))
   const openedAutomatically = useRef(showHelp)
   useEffect(() => {
-    if (openedAutomatically.current && instructions) track('how_to_play_opened', { mode: mode.name, automatic: true })
-  }, [instructions, mode.name])
+    if (!openedAutomatically.current || !instructions) return
+    markHowToPlaySeen(modeId)
+    track('how_to_play_opened', { mode: mode.name, automatic: true })
+  }, [instructions, mode.name, modeId])
   const enabledCount = (mode.options ?? []).filter((o) => config.options[o.id]).length
 
   const toggleOption = (id: string) => {
