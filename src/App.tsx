@@ -7,6 +7,8 @@ import { RushPlay } from './screens/RushPlay'
 import { AuditPlay } from './screens/AuditPlay'
 import { Results, type SaveInfo } from './screens/Results'
 import { Setup } from './screens/Setup'
+import { summarize } from './engine/sprint'
+import { track } from './lib/analytics'
 import { recordRound, saveLastConfig } from './storage/stats'
 
 type Route =
@@ -48,8 +50,27 @@ export default function App() {
 
   const finish = useCallback((result: RoundResult) => {
     const saveInfo = recordRound(result)
+    const summary = summarize(result.records)
+    track('round_finished', {
+      ...roundProps(result.config),
+      score: summary.score,
+      attempted: summary.attempted,
+      new_best: saveInfo.isNewBest,
+    })
     setStack((s) => [...s.slice(0, -1), { name: 'results', result, saveInfo }])
   }, [])
+
+  // Count every round that starts, including Play again from the results screen.
+  const playingRound = route.name === 'play' ? route.round : null
+  const playingConfig = route.name === 'play' ? route.config : null
+  useEffect(() => {
+    if (playingRound !== null && playingConfig) track('round_started', roundProps(playingConfig))
+  }, [playingRound, playingConfig])
+
+  const quitRound = () => {
+    if (route.name === 'play') track('round_quit', roundProps(route.config))
+    back()
+  }
 
   return (
     <main className="safe-area mx-auto flex min-h-dvh w-full max-w-2xl flex-col">
@@ -60,11 +81,11 @@ export default function App() {
       {route.name === 'play' && (
         <div className="flex flex-1 flex-col">
           {getMode(route.config.modeId).kind === 'rush' ? (
-            <RushPlay key={route.round} config={route.config} onQuit={back} onFinish={finish} />
+            <RushPlay key={route.round} config={route.config} onQuit={quitRound} onFinish={finish} />
           ) : getMode(route.config.modeId).kind === 'audit' ? (
-            <AuditPlay key={route.round} config={route.config} onQuit={back} onFinish={finish} />
+            <AuditPlay key={route.round} config={route.config} onQuit={quitRound} onFinish={finish} />
           ) : (
-            <Play key={route.round} config={route.config} onQuit={back} onFinish={finish} />
+            <Play key={route.round} config={route.config} onQuit={quitRound} onFinish={finish} />
           )}
         </div>
       )}
@@ -83,4 +104,9 @@ export default function App() {
       )}
     </main>
   )
+}
+
+/** The details sent with every round event: which mode, level and length. */
+function roundProps(config: SprintConfig) {
+  return { mode: getMode(config.modeId).name, level: config.difficulty, duration: config.duration }
 }
