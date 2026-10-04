@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { HowToPlay } from '../components/HowToPlay'
 import { RecentRuns } from '../components/RecentRuns'
 import { Button, OptionRow, TextButton } from '../components/ui'
 import { DIFFICULTIES, DURATIONS, type ModeId, type SprintConfig } from '../engine/types'
+import { track } from '../lib/analytics'
 import { getMode } from '../modes'
 import { INSTRUCTIONS } from '../modes/instructions'
 import { getBest, getLastConfig, getRecentRounds, hasPlayed } from '../storage/stats'
@@ -50,6 +51,11 @@ export function Setup({
   const instructions = INSTRUCTIONS[modeId]
   // Show How to play automatically the first time someone visits a mode.
   const [showHelp, setShowHelp] = useState(() => !hasPlayed(modeId))
+  // Count the automatic first-visit opening once, when the screen appears.
+  const openedAutomatically = useRef(showHelp)
+  useEffect(() => {
+    if (openedAutomatically.current && instructions) track('how_to_play_opened', { mode: mode.name, automatic: true })
+  }, [instructions, mode.name])
   const enabledCount = (mode.options ?? []).filter((o) => config.options[o.id]).length
 
   const toggleOption = (id: string) => {
@@ -63,7 +69,16 @@ export function Setup({
     <div className="flex flex-1 flex-col">
       <div className="flex items-baseline justify-between">
         <TextButton onClick={onBack}>← Back</TextButton>
-        {instructions && <TextButton onClick={() => setShowHelp(true)}>How to play</TextButton>}
+        {instructions && (
+          <TextButton
+            onClick={() => {
+              track('how_to_play_opened', { mode: mode.name, automatic: false })
+              setShowHelp(true)
+            }}
+          >
+            How to play
+          </TextButton>
+        )}
       </div>
 
       <h1 className="pb-8 pt-8 text-4xl font-bold tracking-tight">{mode.name}</h1>
